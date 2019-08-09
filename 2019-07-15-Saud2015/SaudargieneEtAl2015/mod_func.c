@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include "hocdec.h"
+#define IMPORT extern __declspec(dllimport)
+IMPORT int nrnmpi_myid, nrn_nobanner_;
+
+modl_reg(){
+	//nrn_mswindll_stdio(stdin, stdout, stderr);
+    if (!nrn_nobanner_) if (nrnmpi_myid < 1) {
+	fprintf(stderr, "Additional mechanisms from files\n");
+
+fprintf(stderr," ANsyn.mod");
+fprintf(stderr," IA.mod");
+fprintf(stderr," Ih.mod");
+fprintf(stderr," Kaxon.mod");
+fprintf(stderr," Kdend.mod");
+fprintf(stderr," Ksoma.mod");
+fprintf(stderr," LcaMig.mod");
+fprintf(stderr," Naaxon.mod");
+fprintf(stderr," Nadend.mod");
+fprintf(stderr," Nasoma.mod");
+fprintf(stderr," STDPE2Syn.mod");
+fprintf(stderr," bgka.mod");
+fprintf(stderr," bistableGB_DOWNUP.mod");
+fprintf(stderr," burststim2.mod");
+fprintf(stderr," cad.mod");
+fprintf(stderr," cadiffus.mod");
+fprintf(stderr," cagk.mod");
+fprintf(stderr," cal.mod");
+fprintf(stderr," calH.mod");
+fprintf(stderr," car.mod");
+fprintf(stderr," cat.mod");
+fprintf(stderr," ccanl.mod");
+fprintf(stderr," d3.mod");
+fprintf(stderr," gabaa.mod");
+fprintf(stderr," gabab.mod");
+fprintf(stderr," glutamate.mod");
+fprintf(stderr," gskch.mod");
+fprintf(stderr," h.mod");
+fprintf(stderr," hNa.mod");
+fprintf(stderr," hha2.mod");
+fprintf(stderr," hha_old.mod");
+fprintf(stderr," ichan2.mod");
+fprintf(stderr," kadbru.mod");
+fprintf(stderr," kadist.mod");
+fprintf(stderr," kapbru.mod");
+fprintf(stderr," kaprox.mod");
+fprintf(stderr," kca.mod");
+fprintf(stderr," km.mod");
+fprintf(stderr," my_exp2syn.mod");
+fprintf(stderr," nap.mod");
+fprintf(stderr," nca.mod");
+fprintf(stderr," nmda.mod");
+fprintf(stderr," nmdaca.mod");
+fprintf(stderr," regn_stim.mod");
+fprintf(stderr," somacar.mod");
+fprintf(stderr, "\n");
+    }
+_ANsyn_reg();
+_IA_reg();
+_Ih_reg();
+_Kaxon_reg();
+_Kdend_reg();
+_Ksoma_reg();
+_LcaMig_reg();
+_Naaxon_reg();
+_Nadend_reg();
+_Nasoma_reg();
+_STDPE2Syn_reg();
+_bgka_reg();
+_bistableGB_DOWNUP_reg();
+_burststim2_reg();
+_cad_reg();
+_cadiffus_reg();
+_cagk_reg();
+_cal_reg();
+_calH_reg();
+_car_reg();
+_cat_reg();
+_ccanl_reg();
+_d3_reg();
+_gabaa_reg();
+_gabab_reg();
+_glutamate_reg();
+_gskch_reg();
+_h_reg();
+_hNa_reg();
+_hha2_reg();
+_hha_old_reg();
+_ichan2_reg();
+_kadbru_reg();
+_kadist_reg();
+_kapbru_reg();
+_kaprox_reg();
+_kca_reg();
+_km_reg();
+_my_exp2syn_reg();
+_nap_reg();
+_nca_reg();
+_nmda_reg();
+_nmdaca_reg();
+_regn_stim_reg();
+_somacar_reg();
+}

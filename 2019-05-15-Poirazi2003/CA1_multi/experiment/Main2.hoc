@@ -1,0 +1,197 @@
+// This experiment is used to study the effect of h-current on (1) input resistances and
+// (2) propagation of hyperpolarizing voltage traces at the somatic and dendritic regions
+// and show that model responses comply with physiological findings in Magee, J. C. (1998).
+// Dendritic hyperpolarization-activated currents modify the integrative
+// properties of hippocampal CA1 pyramidal neurons. J. Neurosci, 18 (19), 7613:7624.
+
+load_file("nrngui.hoc")
+load_file("../template/load_templates.hoc")
+// load_proc("nrnmainmenu")
+// load_template("ExperimentControl")  // load needed templates
+objref econ                         // initialize template parameters
+show_errs=1
+debug_lev=1
+econ=new ExperimentControl(show_errs,debug_lev)
+econ.self_define(econ)
+v_init = -70
+econ.morphology_dir = "../morphology/n123"                                 // set location for morphology files
+econ.add_lib_dir("Terrence","../lib")                                      // set location for library files
+econ.generic_dir    = "../experiment/"                                     // set location for cell-setup file
+econ.data_dir       = "data"                                                  // set directory to store data
+
+if (unix_mac_pc()==1) {	// only the original unix platform currently is setup to write data files
+	sprint(econ.syscmd, "mkdir -p %s", econ.data_dir)
+	system(econ.syscmd)
+}
+
+econ.xopen_geometry_dependent("cell")                                        // load raw cell morphology
+econ.xopen_geometry_dependent("cell-analysis")                               // load user-defined semantics on morphology
+cell_analysis(econ)
+
+printf("Opening cell setup\n")                                               // load cell-setup to
+econ.xopen_generic("cell-setup")                                             // specify all mechanisms,
+printf("Opened. Setting up cell\n")                                          // membrane properties etc
+cell_setup(econ)
+
+proc hha2_block() {  // Block all h-channels by 80%
+fk = 0
+fna = 0
+forall if(ismembrane("hha2")) {
+   for(x) {  gnabar_hha2(x)= gnabar_hha2(x)*fna
+              gkbar_hha2(x)= gkbar_hha2(x)*fk }
+   }
+}
+
+proc hha_old_block() {  // Block all h-channels by 80%
+fk = 0
+fna = 0
+forall if(ismembrane("hha_old")) {
+   for(x) {  gnabar_hha_old(x)= gnabar_hha_old(x)*fna
+              gkbar_hha_old(x)= gkbar_hha_old(x)*fk }
+   }
+}
+
+proc h_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("h")) {
+   for(x) {  gbar_h(x)= gbar_h(x)*f }
+   }
+}
+
+proc km_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("km")) {
+   for(x) {  gbar_km(x)= gbar_km(x)*f }
+   }
+}
+
+proc kap_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("kap")) {
+   for(x) {  gkabar_kap(x)= gkabar_kap(x)*f }
+   }
+}
+
+proc kad_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("kad")) {
+   for(x) {  gkabar_kad(x)= gkabar_kad(x)*f }
+   }
+}
+
+proc kca_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("kca")) {
+   for(x) {  gbar_kca(x)= gbar_kca(x)*f }
+   }
+}
+
+proc mykca_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("mykca")) {
+   for(x) {  gkbar_mykca(x)= gkbar_mykca(x)*f }
+   }
+}
+
+proc cal_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("cal")) {
+   for(x) {  gcalbar_cal(x)= gcalbar_cal(x)*f }
+   }
+}
+
+proc somacar_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("somacar")) {
+   for(x) {  gcabar_somacar(x)= gcabar_somacar(x)*f }
+   }
+}
+
+proc cat_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("cat")) {
+   for(x) {  gcatbar_cat(x)= gcatbar_cat(x)*f }
+   }
+}
+
+proc car_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("car")) {
+   for(x) {  gcabar_car(x)= gcabar_car(x)*f }
+   }
+}
+
+proc calH_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("calH")) {
+   for(x) {  gcalbar_calH(x)= gcalbar_calH(x)*f }
+   }
+}
+
+proc nap_block() {  // Block all h-channels by 80%
+f = 0
+forall if(ismembrane("nap")) {
+   for(x) {  gnabar_nap(x)= gnabar_nap(x)*f }
+   }
+}
+
+proc pas_set() {
+  v_init = -70
+  forall if(ismembrane("pas")) {
+     for(x) {  e_pas(x)= v_init }
+     }
+}
+
+access soma                                                                  // current injection at the soma
+
+// pas_set()
+// hha2_block()
+// hha_old_block()
+// h_block()
+// km_block()
+// kap_block()
+// kad_block()
+// kca_block()
+// mykca_block()
+// cal_block()
+// somacar_block()
+// cat_block()
+// car_block()
+// calH_block()
+// nap_block()
+
+// Set simulation parameters for the experiment
+
+objref ic,ic2
+ic=new IClamp(0.5)
+
+econ.defvar("Simulation Control", "tstop", "2000", "Defines when the simulation stops.")
+econ.defvar("Simulation Control", "dt", "0.1", "Timestep")
+econ.defvar("Simulation Control", "steps_per_ms", "10", "How many points are plotted per ms")
+setdt()
+
+// Define current injection parameters as per J. Magee, J. of Neuroscience, 18(19) 7613-7624, 1998
+
+econ.defvar("Current Clamp Control", "ic.dur", "500", "Determines the duration of the current clamp.")
+
+// use in Control case
+econ.defvar("Current Clamp Control", "ic.amp", "0.150", "Determines the amplitude of the current clamp for the control case.")
+econ.defvar("Current Clamp Control", "ic.del", "1000", "Determines the delay before onset of the current clamp.")
+
+
+//use in I_h blockade case
+//econ.defvar("Current Clamp Control", "ic.amp", "-0.1", "Determines the amplitude of the current clamp for the I_h blocked case.")
+//econ.defvar("Current Clamp Control", "ic.del", "300", "Determines the delay before onset of the current clamp for the I_h blockade case so that the cell reaches steady stae.")
+
+tstop = tstop + ic.del
+
+econ.xopen_library("Terrence","basic-graphics")                            // open graphics library file
+addgraph_2("soma.v(0.5)",      0,tstop,-70,40)                            // plot voltage trace at soma
+
+objref vsoma
+vsoma = new Vector(tstop/dt)                                     // record voltage at soma and store in vector vsoma
+vsoma.record(&soma.v(0.5))
+
+finitialize(v_init)                                                    // initialize and run experiment
+fcurrent()
+run()

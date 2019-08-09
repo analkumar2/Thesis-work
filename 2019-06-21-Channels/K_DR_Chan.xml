@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<channelml units="SI Units">
+  <channel_type name="K_DR_chan">
+    <status value="stable"/>
+    <metadata />
+    <referencedata />
+    <parameters />
+    <current_voltage_relation cond_law="ohmic" ion="k" default_gmax="36" default_erev="-77.0">
+      <conc_dependence />
+      <q10settings />
+      <offset />
+      <gate name="n" instances="4">
+        <closed_state id="n0"/>
+        <open_state id="n"/>
+        <transition name="alpha" from="n0" to="n" expr_form="exp_linear" rate="0.1" scale="10" midpoint="-55"/>
+        <transition name="beta" from="n" to="n0" expr_form="exponential" rate="0.125" scale="-80" midpoint="-65"/>
+      </gate>
+    </current_voltage_relation>
+  </channel_type>
+</channelml>
