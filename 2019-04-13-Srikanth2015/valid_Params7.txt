@@ -1,0 +1,51 @@
+32287.351974 - rm
+0.830676 - cm
+0.007598 - gbarNa
+0.816827 - ht_Na
+1.084830 - mt_Na
+0.986498 - st_Na
+-44.151697 - vhalfh_na3
+-29.758757 -   vhalfm_na3
+-59.510922 - vhalfs_na3
+0.004339 - gkdrbar_kdr
+0.626055 - ntfactor_kdr
+10.443284 - vhalfn_kdr
+0.002069 - gkabar_kap
+0.678116 -  ltfactor_kap
+1.790612 - ntfactor_kap
+-58.836023 - vhalfl_kap
+8.294468 -   vhalfn_kap
+0.000157 - gcatbar_cat
+0.963171 - htfactor_cat
+1.552435 - mtfactor_cat
+-70.018017 - vhalfh_cat
+-17.868123 - vhalfm_cat
+0.000011 - ghdbar_hd
+1.133596 - ltfactor_hd
+-77.553235 - vhalfl_hd
+0.000051 - gcalbar_call
+1.840658 - mtfactor_call
+-29.743401 - vhalfa_call
+0.000007 - gmax_car
+0.615933 - htfactor_car
+1.482045 - mtfactor_car
+-42.085754 - vhalfh_car
+0.058617 - vhalfm_car
+0.000161933 - cahalf_sk
+4.28006e-06 -gskbar_sk 
+0.522782 - tfactor_sk
+5.08559e-07 - ggkbar_gk
+0.000588 - k1_gk
+8.76481e-08 -   k2_gk
+1.279493 - tfactor_gk
+
+3.88294e-06 - gbar_km
+1.442796 - tfactor_km
+-44.607246 - vhalfl_km
+
+0.000176 - gcanbar_can
+1.760253 - htfactor_can
+1.495491 -   mtfactor_can
+39.676957 - vhalfh_can
+23.916356 -   vhalfm_can
+

@@ -1,0 +1,8 @@
+gdb -ex r --args python traub1991.py
+python -m pip install pymoose --pre --user --upgrade
+
+git add .
+git commit -m "Add existing file"
+git push origin master
+
+exec(open(fn).read())

@@ -1,0 +1,26 @@
+// This function loads all morphology-related files and templates that will 
+// most probably be needed in the experiments to follow.
+// written by Terrence Brannon, modified Yiota Poirazi, July 2001, poirazi@LNC.usc.edu
+
+objref vRP, vAPEX
+
+proc cell_analysis() {
+
+  forall insert d3   // mod file to enable 3-D mapping of each point along the cell
+
+  $o1.defvar("Distance Calculation", "adjustment", "41.1", "This adjustment factor is supplied to the vector distance function so that distance calculations are measured at the cell body.")
+
+  $o1.xopen_library("Terrence","vector-distance")
+
+  $o1.xopen_geometry_dependent("soma-list")
+
+}
+
+
+
+
+
+
+
+
+

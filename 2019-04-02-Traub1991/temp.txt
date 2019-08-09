@@ -1,0 +1,4 @@
+[moose.delete(x) for x in ['/model', '/library']]
+execfile('traub1991.py')
+execfile('../temp1.py')
+execfile('../Rotation_2_Harsha/reproducingTraub1991.py')

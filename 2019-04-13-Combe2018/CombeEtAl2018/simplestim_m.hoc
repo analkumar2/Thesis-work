@@ -1,0 +1,128 @@
+
+back=0
+
+//////// load needed templates////////////
+if(!back){ load_file("nrngui.hoc")               }
+if(!back){ load_file("template/ObliquePath.hoc") }
+if(!back){ load_file("template/BasalPath.hoc"  ) }
+
+objref econ,f1,f2,f3,ss,cvode
+f1= new File()
+f2= new File()
+f3= new File()
+ss=new SaveState()
+cvode = new CVode(1)
+x=cvode.active(1)
+
+restart=0
+v_init=-70
+
+strdef morphology_location, morpho_path, ObliqueTrunkSection, BasalTrunkSection
+objref vRP, vAPEX
+
+proc xopen_morphology(){
+	sprint(morpho_path,"%s/%s",morphology_location,$s1)
+	xopen(morpho_path)
+}
+
+// Carmen
+morphology_location = "pc2b"
+ObliqueTrunkSection = "trunk[17]"
+BasalTrunkSection   = "trunk[7]"
+
+xopen_morphology("cell.hoc")				//reads morpholofy from the file
+xopen_morphology("cell-analysis-simple.hoc") //reads simplified version of CA
+
+
+			// --------------- Creating lists-----------------
+
+xopen("lib/TP-lib.hoc")
+Tip_sections(apical_non_trunk_list,apical_trunk_list,"Apical")
+objref apical_tip_list
+apical_tip_list=TP_list							// Apical Tip list
+
+print "apical_tip_list"
+apical_tip_list.printnames()
+print  "END apical_tip_list"
+
+objref tmp_pl[num_tips],pl[num_tips],opl[num_tips],degree_apical_tip,peri_trunk_list
+objref bl[num_tips],obl[num_tips],degree_basal_tip
+xopen("lib/Oblique-lib.hoc")
+oblique_sections(apical_tip_list,apical_trunk_list,num_tips)		// apical dendrite path lists and degree of tips
+
+xopen("lib/vector-distance.hoc")
+
+//-----------------------------------------------------------------------------------------------------
+printf("Setting up cell\n")                                         // load cell-setup to
+xopen("cell-setup.hoc")                                             // specify all mechanisms, membrane properties etc
+cvode_active(1)
+
+///////////////////Simulate//////////////////////
+
+objref syn
+soma syn = new IClamp(0.5)
+syn.del = 1000
+syn.dur = 500
+syn.amp = 0.150
+
+objref rect, recv
+rect = new Vector()
+recv = new Vector()
+recv.record(&soma.v(0.5))
+rect.record(&t)
+
+objref g_v
+g_v = new Graph()
+g_v.size(0,2000,-80,40)
+g_v.addvar("soma.v(0.5)", 1, 1, 0.6, 0.9, 2)
+
+objref g_iKSK
+g_iKSK = new Graph()
+g_iKSK.size(0,2000,-1,1)
+g_iKSK.addvar("soma.gbar_kca(0.5)", 1, 1, 0.6, 0.9, 2)
+
+dt = 0.000025
+tstop = 2000
+v_init = -70
+
+proc initialize() {
+t = 0
+finitialize(v_init)
+fcurrent()
+}
+
+proc integrate() {
+g_v.begin()
+g_iKSK.begin()
+while (t<tstop) {
+fadvance()
+g_v.plot(t)
+g_iKSK.plot(t)
+}
+g_v.flush()
+g_iKSK.flush()
+}
+
+proc go() {
+initialize()
+integrate()
+}
+
+go()
+
+
+//////////////////Save the trace////////////
+// objref savdata
+// savdata = new File()
+// savdata.wopen("cell3somav.dat")
+//
+// savdata.printf("t soma.v(0.5)\n")
+//
+// objref tempmatrix
+// tempmatrix = new Matrix()
+// tempmatrix.resize(recv.size(),2)
+// tempmatrix.setcol(0, rect)
+// tempmatrix.setcol(1, recv)
+// tempmatrix.fprint(savdata, " %g")
+// savdata.close()
+/********    end file    ******/
