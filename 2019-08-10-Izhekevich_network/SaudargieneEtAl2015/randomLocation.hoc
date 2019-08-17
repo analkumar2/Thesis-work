@@ -1,0 +1,84 @@
+//  randomize_location = new RandomLocation($o2, $4)
+//  randomize_location = new RandomLocation(SectionList, randomseed)
+
+
+
+begintemplate RandomLocation
+
+public loc
+objectvar seclist, ran
+
+proc init() {
+    seclist = $o1  //SectionList
+    ran = new Random($2) //randomseed
+    total_length = 0
+    forsec seclist { total_length = total_length + L } //length
+//print "Random Location Total Length"
+//print total_length
+
+}
+
+// randomize location of synapse
+// if required put synapse on spine, scale conductance and onset
+proc loc() {local l, done, rpos, secx, dx//, ss
+  //randomize_location.loc(synapse)
+  rpos = ran.uniform(0, total_length) //random number
+  //print "Random location"
+  //print rpos
+
+  done = 0
+  l = 0
+
+  //ss=0
+
+  distance()  // assumes soma is currently accessed               
+  
+  forsec seclist {
+    l = l + L
+   if (l > rpos) {
+  
+      secx = (rpos - l + L)/L //random location in SectionList
+
+      //print "Random location in Section List" //[0; 1]
+      //print secx
+      //print $o1
+
+      $o1.loc(secx)//  SectionList.loc(random location in SectionList) 
+      rpos = 1e20 
+    }
+  }
+}
+
+endtemplate RandomLocation
+
+
+//example 
+
+//creatensyn(cell, cell.apical_list, 100, 1)
+//cell - object, target
+//cell.apical_list - SectionList
+//100 - number of synapses
+//1 - random seed
+//nsyn=$3 - nsyn=100
+//  access $o1.soma  - soma
+//  randomize_location = new RandomLocation($o2, $4)
+//  randomize_location = new RandomLocation(SectionList, randomseed)
+//  for i = 0, nsyn-1 { for =0, 99
+//    syn[i] = new Exp2Syn(0.5)  synapse
+//    syn[i].tau1 = 0.5
+//    syn[i].tau2 = 3
+//    randomize_location.loc(syn[i])  //synapse i on random location 
+//    $o1.pre_list.append(syn[i])
+//}
+//}
+
+//1.Use template RandomLocation - creates random  locations on Section List
+//2.Call random location  
+//randomize_location = new RandomLocation(SectionList,randomseed)
+//3.Use randomize_location in cycle while creating synapses :) :)
+
+
+
+
+
+

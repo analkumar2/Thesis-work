@@ -30,7 +30,7 @@ ca = np.arange(Camin,Camax+dCa, dCa)
 
 def h_Chan(name):
     h = moose.HHChannel( '/library/' + name )
-    h.Ek = EK
+    h.Ek = Eh
     h.Gbar = 300.0*SOMA_A
     h.Gk = 0.0
     h.Xpower = 1.0

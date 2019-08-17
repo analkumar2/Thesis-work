@@ -1,0 +1,1614 @@
+//Synaptic plasticity during theta cycles at Schaffer 
+//collateral synapses on CA1 pyramidal cells in the hippocampus
+//The code is adapted from the Poirazi CA1 pyramidal cell (ModelDB accession number 20212) 
+//and the Cutsuridis microcircuit model (ModelDB accession number 123815) 
+//Theta phases: encoding - retrieval - encoding etc
+//Results reported in Saudargiene A, Cobb S, Graham BP
+//"A computational study on plasticity during theta cycles at Schaffer 
+//collateral synapses on CA1 pyramidal cells in the hippocampus",
+//Hippocampus. 2015;25(2):208–218. 
+
+
+{load_file("nrngui.hoc")}  
+
+{load_file("ObliquePath.hoc")}
+{load_file("BasalPath.hoc")}
+{load_file("randomLocation.hoc")} 
+
+{load_file("pyramidalNeuron.hoc")} 
+
+{load_file("basket_cell17S.hoc")}
+{load_file("axoaxonic_cell17S.hoc")}
+{load_file("bistratified_cell13S.hoc")}
+{load_file("olm_cell2.hoc")}
+{load_file("stim_cell.hoc")}
+{load_file("burst_cell.hoc")}
+{load_file("ranstream.hoc")}  
+
+//--------------------------------------------------------
+//Simulation protocol No
+//--------------------------------------------------------
+
+ind_simulation=1
+
+//No 1  CA3 + EC, BS, AA, B, OLM inhibition, spine line is active in encoding phase
+//No 2  CA3 + EC, BS, AA, B, OLM inhibition, spine line is active in retrieval phase
+//No 3  CA3, BS, AA, B, OLM inhibition, spine line is active in encoding phase  
+//No 4  CA3, BS inhibition, no AA inhibition, no B inhibtion, OLM inhibition, spine line is active in encoding phase 
+//No 5  CA3 strong in encoding and retrieval phases, BS, AA, B, OLM inhibition, spine line is active in encoding phase 
+//No 6  CA3 + EC, no BS inhibition, AA, B, OLM inhibition, spine line is active in retrieval phase 
+
+i_ses=1 //open a session 1-yes, 0-no
+
+
+//--------------------------------------------------------
+//Filenames 
+//--------------------------------------------------------
+strdef filename, filename_RasterCA3, filename_RasterEC, basename_results, basename_RasterCA3, basename_RasterEC
+
+basename_results="results_exp"			//simulation results
+basename_RasterCA3="rasterCA3_exp"		//raster data of CA3 inputs
+basename_RasterEC="rasterEC_exp"		//raster data of EC inputs
+
+sprint(filename, "%s%d.dat", basename_results, ind_simulation) 
+sprint(filename_RasterCA3, "%s%d.dat", basename_RasterCA3, ind_simulation) 
+sprint(filename_RasterEC, "%s%d.dat", basename_RasterEC, ind_simulation) 
+
+
+//-----------------------------------------------------------
+//Parameters of the stimulation protocol
+//-----------------------------------------------------------
+
+//No 1  CA3 + EC, BS, AA, B, OLM inhibition, spine line is active in encoding phase  
+if (ind_simulation==1){
+	storage_inputCA30=1	//SR spine is active in encoding phase
+	recall_inputCA30=0 	//SR spine is not active retrieval phase       
+	EC=1 			//EC input to PC is present 		
+	CA3=1			//CA3 input to PC is present 
+	BSinhibition=1 		//Bistratified inhibition to PC is present 		
+	AAinhibition=1		//Axo-axonic and basket inhibition to PC is present 
+	OLMinhibition=1		//OLM inhibition to PC is present 
+}
+
+//No 2  CA3 + EC, BS, AA, B, OLM inhibition, spine line is active in retrieval phase 
+if (ind_simulation==2){
+	storage_inputCA30=0	//SR spine is not active in encoding phase
+	recall_inputCA30=1 	//SR spine is active in retrieval phase       
+	EC=1 			//EC input to PC is present 		
+	CA3=1			//CA3 input to PC is present 
+	BSinhibition=1 		//Bistratified inhibition to PC is present 		
+	AAinhibition=1		//Axo-axonic and basket inhibition to PC is present 
+	OLMinhibition=1		//OLM inhibition to PC is present 
+}
+
+//No 3  CA3, BS, AA, B, OLM inhibition, spine line is active in encoding phase  
+if (ind_simulation==3){
+	storage_inputCA30=1	//SR spine is active in encoding phase	
+	recall_inputCA30=0 	//SR spine is not active retrieval phase      
+	EC=0 			//EC input to PC is not present 			
+	CA3=1			//CA3 input to PC is present
+	BSinhibition=1 		//Bistratified inhibition to PC is present		
+	AAinhibition=1		//Axo-axonic and basket inhibition to PC is present 	
+	OLMinhibition=1		//OLM inhibition to PC is present 
+}
+
+//No 4  CA3, BS inhibition, no AA inhibition, no B inhibtion, OLM inhibition, spine line is active in encoding phase 
+if (ind_simulation==4){
+	storage_inputCA30=1	//SR spine is active in encoding phase
+	recall_inputCA30=0 	//SR spine is not active retrieval phase        
+	EC=0 			//EC input to PC is not present 
+	CA3=1			//CA3 input to PC is present
+	BSinhibition=1 		//Bistratified inhibition to PC is present
+	AAinhibition=0		//Axo-axonic and basket inhibition to PC is not present 
+	OLMinhibition=1		//OLM inhibition to PC is present 
+}
+
+//No 5  CA3 strong in encoding and retrieval phases, BS, AA, B, OLM inhibition, spine line is active in encoding phase 
+if (ind_simulation==5){
+	storage_inputCA30=1	//SR spine is active in encoding phase
+	recall_inputCA30=0 	//SR spine is not active retrieval phase        
+	EC=0 			//EC input to PC is not present 
+	CA3=1			//CA3 input to PC is present
+	BSinhibition=1 		//Bistratified inhibition to PC is present
+	AAinhibition=1		//Axo-axonic and basket inhibition to PC is present 
+	OLMinhibition=1		//OLM inhibition to PC is present 
+}
+
+//No 6  CA3 + EC, no BS inhibition, AA, B, OLM inhibition, spine line is active in retrieval phase 
+if (ind_simulation==6){		
+	storage_inputCA30=0	//SR spine is not active in encoding phase
+	recall_inputCA30=1	//SR spine is active retrieval phase     
+	EC=1 			//EC input to PC is not present 
+	CA3=1			//CA3 input to PC is present
+	BSinhibition=0 		//Bistratified inhibition to PC is not present
+	AAinhibition=1		//Axo-axonic and basket inhibition to PC is present 
+	OLMinhibition=1		//OLM inhibition to PC is present 
+}
+
+//--------------------------------------------------------
+//Plasticity model Graupner and Brunel (2012)
+//--------------------------------------------------------
+
+thp_stdp=1.3 		//LTP threshold
+thd_stdp=1		//LTD threshold
+tau_stdp=100000		//time constant
+
+//--------------------------------------------------------
+//SR spine AMPA and NMDA weights
+//--------------------------------------------------------
+
+gNMDA_CA30=0.00005 	//NMDA on SR spine
+gAMPA_CA30=0.003	//AMPA on SR spine
+
+
+//SR spine active in encoding phase; AMPA and NMDA weights
+
+if (storage_inputCA30>0){
+
+	CHWGT_CA3_0_storage=gAMPA_CA30*0.4	//weak AMPA in encoding phase, SR spine
+	CNMDA_CA3_0_storage=gNMDA_CA30		//NMDA in encoding phase, SR spine
+
+	CHWGT_CA3_0_recall=0          
+	CNMDA_CA3_0_recall=0
+
+        if (ind_simulation==5){			//strong AMPA in encoding and retrieval phases
+            CHWGT_CA3_0_storage=gAMPA_CA30
+        }
+}
+
+//SR spine active in retrieval phase; AMPA and NMDA weights
+
+if (recall_inputCA30>0){
+
+	CHWGT_CA3_0_storage=0
+	CNMDA_CA3_0_storage=0
+
+	CHWGT_CA3_0_recall=gAMPA_CA30      
+	CNMDA_CA3_0_recall=gNMDA_CA30	
+}
+
+
+//--------------------------------------------------------
+//EC - PC weights
+//--------------------------------------------------------
+
+if (EC>0) {
+	EIWGT_EC_PC_AMPA=0		//AMPA, fixed locations
+	EIWGT_EC_PC_AMPAran=0.08 	//AMPA, random locations
+}
+
+if (EC==0) {
+	EIWGT_EC_PC_AMPA=0		//AMPA, fixed locations
+	EIWGT_EC_PC_AMPAran=0  		//AMPA, random locations
+}
+
+//------------------------------------------------------------
+//CA3 - PC weights
+//-------------------------------------------------------------
+
+if (CA3>0) {
+
+      	EIWGT_CA3_PC_AMPAran_storage=0.04				//AMPA in encoding phase, random locations
+
+	EIWGT_CA3_PC_AMPAran_recall=2.5*EIWGT_CA3_PC_AMPAran_storage	//AMPA in retrieval phase, random locations
+
+	if (ind_simulation==5){
+		EIWGT_CA3_PC_AMPAran_storage=EIWGT_CA3_PC_AMPAran_recall//strong AMPA in encoding and retrieval phases
+	}
+
+	
+	EIWGT_CA3_PC_AMPA_storage =0					//AMPA in encoding phase, fixed location	
+	
+	EIWGT_CA3_PC_AMPA_recall = 2.5*EIWGT_CA3_PC_AMPA_storage	//AMPA in retrieval phase, fixed location
+
+        if (ind_simulation==5){
+		EIWGT_CA3_PC_AMPA_storage=EIWGT_CA3_PC_AMPA_recall	//strong AMPA in encoding and retrieval phases
+	}
+}
+
+if (CA3==0){
+	EIWGT_CA3_PC_AMPA_storage =0	
+	EIWGT_CA3_PC_AMPA_recall = 0
+	EIWGT_CA3_PC_AMPAran_storage=0
+	EIWGT_CA3_PC_AMPAran_recall=0
+}
+
+
+//------------------------------------------------------------
+//Basket and AA inhibition 
+//------------------------------------------------------------
+if (AAinhibition>0){
+	Bcell2Pcell_weight=0.1
+	AAcell2Pcell_weight=0.04
+}
+if (AAinhibition==0){
+	Bcell2Pcell_weight=0
+	AAcell2Pcell_weight=0
+}
+
+//Activation of BC, AA by CA3
+EIWGT_CA3_BC=0.00005
+EIWGT_CA3_AAC=0.00002
+
+//Activation of BC, AA by EC
+EIWGT_EC_BC=0.0025
+EIWGT_EC_AAC=0.0025
+
+//B activation by PC 
+Pcell2Bcell_weight = 0.0005  
+
+//AA activation by PC
+Pcell2AAcell_weight = 0.001
+
+//Basket to OLM
+Bcell2OLMcell_weight = 0.0 
+
+//Basket to Basket
+Bcell2Bcell_weight = 0.001
+
+//Delays 
+Bcell2Pcell_delay = 1
+Bcell2Bcell_delay = 1
+AAcell2Pcell_delay = 1
+Pcell2Bcell_delay = 1
+Bcell2BScell_delay = 1
+Bcell2OLMcell_delay = 1
+Pcell2AAcell_delay = 1
+
+//------------------------------------------------------------
+//BSC inhibition
+//------------------------------------------------------------
+
+if (BSinhibition>0){
+	BScell2Pcell_weight=0.005		//GABA-A
+	BScell2Pcell_GABAB_weight=0.0005	//GABA-B
+	EIWGT_BS_PC_GABAAran=0.004		//GABA-A, random locations
+	EIWGT_BS_PC_GABABran=0.0001		//GABA-B, random locations
+}
+if (BSinhibition==0){
+	BScell2Pcell_weight=0
+	BScell2Pcell_GABAB_weight=0
+	EIWGT_BS_PC_GABAAran=0 
+	EIWGT_BS_PC_GABABran=0
+}
+
+//BSC activation by CA3
+EIWGT_CA3_BSC=0.001
+
+//Basket to Bistratified
+Bcell2BScell_weight =0.05
+
+//Bistratified to Basket
+BScell2Bcell_weight = 0.01
+
+//PC to BSC
+Pcell2BScell_weight = 0.0005
+
+//Delays
+BScell2Pcell_delay = 1
+Pcell2BScell_delay = 1
+BScell2Bcell_delay = 1
+
+
+//------------------------------------------------------------
+//OLM inhibition  
+//------------------------------------------------------------
+
+if (OLMinhibition>0) {
+	OLMcell2Pcell_weight_recall=0.02		//GABA-A, retrieval phase
+	OLMcell2Pcell_GABAB_weight_recall=0.02		//GABA-B, retrieval phase
+	OLMcell2Pcell_weight_storage=0         		//GABA-A, encoding phase
+	OLMcell2Pcell_GABAB_weight_storage=0		//GABA-B, encoding phase
+	Pcell2OLMcell_weight = 0.001			//OLM to PC
+}
+
+if (OLMinhibition==0) {
+	OLMcell2Pcell_weight_storage=0         
+	OLMcell2Pcell_GABAB_weight_storage=0  
+ 	OLMcell2Pcell_weight_recall=0
+	OLMcell2Pcell_GABAB_weight_recall=0
+	Pcell2OLMcell_weight = 0
+}
+
+
+//OLM to Basket
+OLMcell2Bcell_weight = 0.0  
+
+//Delays
+OLMcell2Pcell_delay = 1
+Pcell2OLMcell_delay = 1
+OLMcell2Bcell_delay = 1
+
+
+
+//------------------------------------------------------------
+//Activation of CA3_0  line 
+//------------------------------------------------------------
+
+//Number of spikes in bursts
+spikes_burst_EC=2
+spikes_burst_CA3=2
+
+STARTDELm=5 //EC activation  
+ECCA3DEL=9  //delay of CA3 activation 
+
+CSTART_CA3_0=STARTDELm+ECCA3DEL 		// activation time of SR spine
+CSTART_CA3=CSTART_CA3_0				// activation time of other CA3 inputs 
+CNUM_CA3_0=100000				// number of spikes for SR spine
+CNUM = 100000					// number of spikes for other CA3 inputs
+
+//1 spike in a burst
+if (spikes_burst_CA3==1){
+	//CA3_0 Burst SR spine: 1 spike 
+	CA3_BURST_SPIKE_INT_CA3_0 = 25		// spike ISI (during burst)
+	CA3_BURST_NOISE_CA3_0 = 0.1 		// ISI noise
+	CA3_BURST_INT_CA3_0 =120		// interburst interval 
+	CA3_BURST_LEN_CA3_0 =5			// burst length, interval between bursts 
+	CA3_BURST_START_CA3_0=CSTART_CA3_0	// SR spine activation start time
+
+	//CA3 Burst: 1s spike
+	CA3_BURST_SPIKE_INT = 25
+	CA3_BURST_NOISE = 0.1
+	CA3_BURST_INT =120
+	CA3_BURST_LEN =5
+	CA3_BURST_START=CSTART_CA3
+}
+
+//2 spikes in a burst
+if (spikes_burst_CA3==2){
+	//CA3_0 Burst SR spine: 2 spikes 25ms apart
+	CA3_BURST_SPIKE_INT_CA3_0 = 25
+	CA3_BURST_NOISE_CA3_0 = 0
+	CA3_BURST_INT_CA3_0 =85
+	CA3_BURST_LEN_CA3_0 =40
+	CA3_BURST_START_CA3_0=CSTART_CA3_0
+
+	//CA3 Burst: 2 spikes 25ms apart 
+	CA3_BURST_SPIKE_INT = 25
+	CA3_BURST_NOISE = 0.1
+	CA3_BURST_INT =85
+	CA3_BURST_LEN =40
+	CA3_BURST_START=CSTART_CA3
+
+}
+
+CDEL_CA3_0=0  	//delay
+CDEL = 1	// cue delay
+
+
+
+//--------------------------------------------------------
+//Activation of EC line 
+//--------------------------------------------------------
+
+ECNUM_EC0=100000 			// number of spikes EC0 line
+ECNUM = 100000                  	// number of spikes EC lines
+EC_BURST_START=STARTDELm		// EC activation start time
+ECSTART_EC0=STARTDELm
+
+
+//1 spike in a burst
+if (spikes_burst_EC==1){
+	EC_BURST_SPIKE_INT = 25		// spike ISI (during burst)
+	EC_BURST_NOISE =0.1		// ISI noise
+	EC_BURST_INT =245		// interburst interval
+	EC_BURST_LEN =5			// burst length
+}
+
+//2 spikes in a burst	
+if (spikes_burst_EC==2){
+	EC_BURST_SPIKE_INT = 25		// spike ISI (during burst)
+	EC_BURST_NOISE =0.1		// ISI noise
+	EC_BURST_INT =210		// interburst interval
+	EC_BURST_LEN =40	 	// burst length
+}
+
+	
+//--------------------------------------------------------
+//Parameters
+//--------------------------------------------------------
+
+n_cycles=100	//encoding-retrieval cycles
+t_restart=250	//time to reset synaptic efficacy variable
+tstop=5000	
+celsius = 34
+
+//--------------------------------------------------------
+//Microcircuit 
+//--------------------------------------------------------
+
+//--------------------------------------------------------
+// Step 1: Define the cell classes
+//--------------------------------------------------------
+
+npcell = 1	
+nbcell = 2	
+naacell = 1		
+nbscell = 1	
+nolm = 	1
+nCA3 = 100 
+nEC = 20
+nSEP = 10
+ncell = npcell+nbcell+naacell+nbscell+nolm	// total number of cells
+nstim = nCA3+nEC+nSEP		// total number of inputs
+ntot = ncell+nstim
+
+// gid ordering: 
+//	PCs:0..npcell-1
+//	BCs:npcell..npcell+nbcell-1
+//	etc
+// indices of first cell of each type in list "cells"
+iPC = 0
+iBC = npcell
+iAAC = npcell+nbcell
+iBSC = npcell+nbcell+naacell
+iOLM = npcell+nbcell+naacell+nbscell
+iCA3 = npcell+nbcell+naacell+nbscell+nolm
+iEC = npcell+nbcell+naacell+nbscell+nolm+nCA3
+iSEP = npcell+nbcell+naacell+nbscell+nolm+nCA3+nEC
+
+
+//-------------------------------------------------------------------
+// Steps 2 and 3 are to create the cells and connect the cells
+//-------------------------------------------------------------------
+
+C_P = 1  // probability of excitatory connections received by each CA1 PC
+         // from CA3 inputs (1 gives full connectivity)
+         
+SPATT = 20	// number of active cells per pattern
+NPATT = 5	// number of stored patterns
+NSTORE = 5	// number of new patterns to store
+
+CPATT = 1	// index of cue pattern
+CFRAC = 1	// fraction of active cells in cue
+iPPC=1		// index of a pattern PC (1st patt in 5 patterns)
+iNPPC=0		// index of a non-pattern PC (1st patt in 5 patterns)
+
+strdef FPATT	// file name of active CA3 inputs 
+FPATT = "pattsN100S20P5_single.dat"	// stored patterns, 1 for CA3 0 line, 20 CA3 inputs out of 100 are active
+
+// Simple connectivity
+CA3_PC = nCA3  // # of connections received by each PC from CA3 cells (excit)
+CA3_BC = nCA3  // # of connections received by each BC from CA3 cells (excit)
+CA3_AAC = nCA3  // # of connections received by each BC from CA3 cells (excit)
+CA3_BSC = nCA3  // # of connections received by each BC from CA3 cells (excit)
+EC_PC = nEC  // # of connections received by each PC from EC cells (excit)
+EC_BC = nEC  // # of connections received by each BC from EC cells (excit)
+EC_AAC = nEC  // # of connections received by each AAC from EC cells (excit)
+
+SEP_BC = nSEP  // # of connections received by each basket cell from septum (inhib)
+SEP_AAC = nSEP  // # of connections received by each AAC cell from septum (inhib)
+SEP_BSC = nSEP  // # of connections received by each BSC cell from septum (inhib)
+SEP_OLM = nSEP  // # of connections received by each OLM cell from septum (inhib)
+
+// AS //PC_PC = 1  // # of connections received by each PC from other PCs (excit)
+PC_PC = 0  // # of connections received by each PC from other PCs (excit)
+PC_BC = npcell  // # of connections received by each basket cell from PCs (excit)
+PC_BSC = npcell  // # of connections received by each bistratified cell from PCs (excit)
+PC_AAC = npcell  // # of connections received by each bistratified cell from PCs (excit)
+PC_OLM = npcell  // # of connections received by each OLM cell from PCs (excit)
+
+BC_PC = 2  // # of connections received by each PC from basket cells (inhib)
+BC_BSC = 2  // # of connections received by each BSC from basket cells (inhib)
+BC_OLM = 2  // # of connections received by each OLM from basket cells (inhib)
+BC_BC = 1  // # of connections received by each BC from other BCs (inhib)
+AAC_PC = 1  // # of connections received by each PC from axoaxonic cells (inhib)
+BSC_PC = 1  // # of connections received by each PC from bistratified cells (inhib)
+BSC_BC = 1  // # of connections received by each BC from bistratified cells (inhib)
+OLM_PC = 1  // # of connections received by each PC from OLM cells (inhib)
+OLM_BC = 1  // # of connections received by each basket cell from OLM cells (inhib)
+
+Pcell2Pcell_weight = 0
+Pcell2Pcell_delay = 1
+
+
+// Synapse indices
+// onto CA1 PCs
+E_EC = 0	// EC AMPA excit to medium SLM (2 of)
+E_CA3 = 2	// CA3 AMPA excit to medium SR
+EN_CA3 = 3	// CA3 NMDA excit to medium SR
+E_PC = 4	// CA1 recurrent AMPA excit to proximal SR
+I_BC = 5	// ff&fb inhib via BCs to soma
+I_AAC = 6	// ff&fb inhib via AACs to axon initial segment
+I_OLM = 7	// fb inhib via OLMs to SLM (4 of: 2 GABAA, 2 GABAB)
+I_BSC = 11	// ff&fb inhib via BSCs to SR med (12 of: 6 GABAA, 6 GABAB)
+EM_CA3 = 23	// CA3 modifiable (STDP) AMPA excit to medium SR
+EC_0ran=32      // EC AMPA excit to medium SLM (random location, 20 in total, first synapse)
+EC_20ran=51     // EC AMPA excit to medium SLM (random location, 20 in total, last synapse)
+CA30_ran=52	// CA3 AMPA excit to SR (random location, 100 in total, first synapse)
+CA30_ran=151	// CA3 AMPA excit to SR (random location, 100 in total, last synapse)
+BS0_A_ran=152	// ff inhib via BCs GABAA to SR (random location, 20 in total, first synapse)
+BS20_A_ran=171	// ff inhib via BCs GABAA to SR (random location, 20 in total, last synapse)
+BS0_B_ran=172	// ff inhib via BCs GABAB to SR (random location, 20 in total, first synapse)
+BS20_B_ran=191	// ff inhib via BCs GABAB to SR (random location, 20 in total, last synapse)
+
+// onto INs (BC, AAC, BSC)
+EI_EC = 0	// EC AMPA excit (2 of; not onto BSC)
+EI_CA3 = 2	// CA3 AMPA excit (4 of)
+EI_PC = 6	// CA1 PC AMPA excit (2 of)
+II_SAME = 8	// inhib from neighbouring INs (BC->BC; BSC->BSC)
+II_OPP = 9	// inhib from other INs (BSC->BC; BC->BSC)
+II_SEP = 10	// inhib from septum (4 of: 2 GABAA, 2 GABAB)
+
+// onto INs (OLM)
+EO_PC = 0	// CA1 PC AMPA excit (2 of)
+IO_IN = 2	// inhib from INs and septum (2 of: 1 GABAA, 1 GABAB)
+
+// Septal inhibition  //
+THETA = 250	// msecs (4 Hz)
+SEPNUM = 1000	// number of SEP spikes
+SEPINT = 20	// SEP spike ISI (during burst)
+SEPNOISE = 0.4	// SEP ISI noise
+SEPBINT = 2*THETA/3	// SEP interburst interval
+SEPBLEN = THETA/3	// SEP burst length
+SEPDEL = 1	// SEP delay
+SEPWGTL=0//Septum to OLM
+SEPWGT=0
+SEPSTART =(250/12)	// time of first SEP spike
+
+
+// Background excitation (not used)
+ENUM = 0	// number of spikes
+ESTART = 0	// time of first spike
+EINT = 200	// spike ISI
+ENOISE = 1	// ISI noise
+EWGT = 0.001	// excitatory weights (AMPA)
+ENWGT = 0.002	// excitatory weights (NMDA)
+EDEL = 1	// delay (msecs)
+
+
+// EC excitation
+ECPATT = 1	// index of output pattern
+ECDEL = 1	// EC delay
+EIDEL = 1	// delay (msecs)
+
+// Cue (CA3) excitation
+CNUM = 10000	// number of cue spikes
+//weight that is allocated to CA3-AMPA on PC is weight is 0 in a data file 
+CLWGT = 0//0.0005	// unlearnt weight (usually 0)
+
+
+//-------------------------------------------------------------------
+connect_random_low_start_ = 1  // low seed for mcell_ran4_init()
+
+objref nsyn
+
+objref cells, nclist, ncslist, ncelist  // cells will be a List that holds 
+  // all instances of network cells that exist on this host
+  // nclist will hold all NetCon instances that exist on this host
+  // and connect network spike sources to targets on this host (nclist)
+  // ncslist holds NetConns from input spike sources (NetStims)
+objref ranlist  // for RandomStreams on this host
+
+objref stims, stimlist, cuelist, EClist	// phasic and tonic cell stimulation
+
+objref gidvec  // to associate gid and position in cells List
+  // useful for setting up connections and reporting connectivity
+
+//-------------------------------------------------------------------
+//network proc mknet_CA1()
+//-------------------------------------------------------------------
+
+proc mknet_CA1() {
+
+  print "Make cells..."
+  mkcells()  // create the cells
+    
+  print "Make inputs..."
+  mkinputs()  // create the CA3, EC and septal inputs
+
+
+  print "Connect cells..."
+  mcell_ran4_init(connect_random_low_start_)
+
+  nclist = new List()
+  
+  //-------------------------
+  // EC to BC
+  connectcells(nbcell, iBC, nEC, iEC, EC_BC, EI_EC, EI_EC+1, EIDEL, EIWGT_EC_BC)
+
+ 
+  //-------------------------
+  // EC to AAC
+  connectcells(naacell, iAAC, nEC, iEC, EC_AAC, EI_EC, EI_EC+1, EIDEL, EIWGT_EC_AAC)
+
+  //-------------------------
+  // CA3 to BC
+  connectcells(nbcell, iBC, nCA3, iCA3, CA3_BC, EI_CA3, EI_CA3+3, EIDEL, EIWGT_CA3_BC)
+
+  //-------------------------
+  // CA3 to AAC
+  connectcells(naacell, iAAC, nCA3, iCA3, CA3_AAC, EI_CA3, EI_CA3+3, EIDEL, EIWGT_CA3_AAC)
+
+  //-------------------------
+  // CA3 to BSC
+  connectcells(nbscell, iBSC, nCA3, iCA3, CA3_BSC, EI_CA3, EI_CA3+3, EIDEL, EIWGT_CA3_BSC)
+
+  //-------------------------
+  // SEP to BC
+  connectcells(nbcell, iBC, nSEP, iSEP, SEP_BC, II_SEP, II_SEP+1, SEPDEL, 0) 
+
+  //------------------------- 
+  // SEP to AAC
+  connectcells(naacell, iAAC, nSEP, iSEP, SEP_AAC, II_SEP, II_SEP+1, SEPDEL, SEPWGT)
+ 
+  //-------------------------
+  // SEP to OLM  
+  connectcells(nolm, iOLM, nSEP, iSEP, SEP_OLM, IO_IN, IO_IN, SEPDEL, SEPWGTL) 
+
+  //-------------------------
+  // PC to BC
+  connectcells(nbcell, iBC, npcell, iPC, PC_BC, EI_PC, EI_PC+1, Pcell2Bcell_delay, Pcell2Bcell_weight)
+
+  //-------------------------
+  // PC to AAC
+  connectcells(naacell, iAAC, npcell, iPC, PC_AAC, EI_PC, EI_PC+1, Pcell2AAcell_delay, Pcell2AAcell_weight)
+ 
+  //-------------------------
+  // PC to BSC
+  connectcells(nbscell, iBSC, npcell, iPC, PC_BSC, EI_PC, EI_PC+1, Pcell2BScell_delay, Pcell2BScell_weight)
+
+  //-------------------------
+  // PC to OLM
+  connectcells(nolm, iOLM, npcell, iPC, PC_OLM, EO_PC, EO_PC+1, Pcell2OLMcell_delay, Pcell2OLMcell_weight)
+
+  //-------------------------
+  // BC to PC
+  connectcells(npcell, iPC, nbcell, iBC, BC_PC, I_BC, I_BC, Bcell2Pcell_delay, Bcell2Pcell_weight)
+
+  //-------------------------
+  // BC to BC
+  connectcells(nbcell, iBC, nbcell, iBC, BC_BC, II_SAME, II_SAME, Bcell2Bcell_delay, Bcell2Bcell_weight)
+ 
+  //-------------------------
+  // BC to BSC
+  connectcells(nbscell, iBSC, nbcell, iBC, BC_BSC, II_OPP, II_OPP, Bcell2BScell_delay, Bcell2BScell_weight)
+
+  //-------------------------
+  // AAC to PC
+  connectcells(npcell, iPC, naacell, iAAC, AAC_PC, I_AAC, I_AAC, AAcell2Pcell_delay, AAcell2Pcell_weight)
+
+  //-------------------------
+  // BSC to PC
+  connectcells(npcell, iPC, nbscell, iBSC, BSC_PC, I_BSC, I_BSC+5, BScell2Pcell_delay, BScell2Pcell_weight)
+
+  connectcells(npcell, iPC, nbscell, iBSC, BSC_PC, I_BSC+6, I_BSC+11, BScell2Pcell_delay, BScell2Pcell_GABAB_weight)
+
+  //-------------------------
+  // BSC to BC
+  connectcells(nbcell, iBC, nbscell, iBSC, BSC_PC, II_OPP, II_OPP, BScell2Bcell_delay, BScell2Bcell_weight)
+
+  //-------------------------
+  // OLM to PC
+  connectcells(npcell, iPC, nolm, iOLM, OLM_PC, I_OLM, I_OLM+1, OLMcell2Pcell_delay, OLMcell2Pcell_weight_storage)
+
+  connectcells(npcell, iPC, nolm, iOLM, OLM_PC, I_OLM+2, I_OLM+3, OLMcell2Pcell_delay, OLMcell2Pcell_GABAB_weight_storage)
+
+  //-------------------------
+  //PC-PC
+  print "Connect inputs..."
+
+  //-------------------------
+  // EC input to PCs
+  connectEC_PC(E_EC, 2) //connect EC to PC single cell 
+   
+  connectCA3($1)	//  CA3 input to PCs with modifiable synapses
+  
+  //-------------------------
+  // BSC to PC - random synapse locations  
+  connectcells(npcell, iPC, nbscell, iBSC, BSC_PC, BS0_A_ran, BS20_A_ran, BScell2Pcell_delay, EIWGT_BS_PC_GABAAran)
+
+  connectcells(npcell, iPC, nbscell, iBSC, BSC_PC, BS0_B_ran, BS20_B_ran, BScell2Pcell_delay, EIWGT_BS_PC_GABABran)
+
+  print "Network Connected! "
+
+
+  
+}
+
+//-------------------------------------------------------------------
+//proc mkcells()
+//-------------------------------------------------------------------
+// creates the cells and appends them to a List called cells
+// argument is the number of cells to be created
+
+proc mkcells() {local i,j  localobj cell, nc, nil
+  cells = new List()
+  ranlist = new List()
+  gidvec = new Vector()
+  for i=0, ntot-1 {
+    if (i < iBC) {
+      
+    cell = new PyramidalCell()
+
+    } else if (i < iAAC) {
+      cell = new BasketCell()	// BC
+    } else if (i < iBSC) {
+      cell = new AACell()	// AAC
+    } else if (i < iOLM) {
+      cell = new BistratifiedCell()	// BSC
+    } else if (i < iCA3) {
+      cell = new OLMCell()	// OLM
+    } else if (i < iEC) {
+      cell = new BurstCell()
+    } else if (i < iSEP) {
+      cell = new BurstCell() //EC input
+    } else {
+      cell = new BurstCell()	// Septal input
+    }
+    cells.append(cell)
+   
+    ranlist.append(new RandomStream(i))  // ranlist.o(i) corresponds to
+   
+    gidvec.append(i)
+
+
+  }
+
+  //-------------------------------------------------------------------
+  //SR spine with plastic AMPA synapse (Graupner and Brunel, 2012) 
+  //-------------------------------------------------------------------
+
+   access cells.object(0).spine_head41
+
+   insert BistableGBdownup
+
+   thp_BistableGBdownup=thp_stdp 	//LTP threshold
+   thd_BistableGBdownup=thd_stdp 	//LTD threshold
+   tau_BistableGBdownup=tau_stdp 	//time constant
+
+}
+
+//-------------------------------------------------------------------
+//proc mkinputs()
+//-------------------------------------------------------------------
+// sets the CA3, EC and Septal background inputs
+
+proc mkinputs() {local i localobj stim, rs
+  for i=0, cells.count-1 {
+    gid = gidvec.x[i]	// id of cell
+    if (gid >= iCA3 && gid < ntot-nSEP-nEC) {	// appropriate target cell
+
+    // set background activity for excitatory inputs
+    stim = cells.object(i).stim
+    stim.number = ENUM
+    stim.start = ESTART
+    stim.interval = EINT
+    stim.noise = ENOISE
+    }
+    if (gid >= iEC && gid < ntot-nSEP) {	// appropriate target cell
+
+    // set background activity for excitatory inputs
+    stim = cells.object(i).stim
+    stim.number = ENUM
+    stim.start = ESTART
+    stim.interval = EINT
+    stim.noise = ENOISE
+    }
+    if (gid >= iSEP && gid < ntot) {	// appropriate target cell
+    // set background activity for septum
+
+    stim = cells.object(i).stim
+    rs = ranlist.object(i)
+    stim.number = SEPNUM
+    stim.start = SEPSTART
+    stim.interval = SEPINT
+    stim.noise = SEPNOISE
+    stim.burstint = SEPBINT
+    stim.burstlen = SEPBLEN
+    // Use the gid-specific random generator so random streams are
+    // independent of where and how many stims there are.
+    stim.noiseFromRandom(rs.r)
+    rs.r.negexp(1)
+    rs.start()
+    }
+  }
+}
+
+//-------------------------------------------------------------------
+//proc connectcells()
+//-------------------------------------------------------------------
+
+// Target cells receive "convergence" number of inputs from
+// the pool of source cells (only one input per source cell at most)
+// ("convergence" not reached if no. of sources < convergence)
+// connectcells(number of targets, first target cell, 
+//		number of source cells, first source cell, 
+//		convergence, first synapse,
+//		last synapse, connection delay, weight)
+// appends the NetCons to a List called nclist
+
+proc connectcells() {local i, j, gid, nsyn, r  localobj syn, nc, rs, u
+
+
+  // initialize the pseudorandom number generator
+  u = new Vector($3)  // for sampling without replacement
+  for i=0, cells.count-1 {	// loop over possible target cells
+    gid = gidvec.x[i]	// id of cell
+
+   
+
+    if (gid >= $2 && gid < $1+$2) {	// appropriate target cell
+      rs = ranlist.object(i)  // RandomStream for cells.object(i)
+      rs.start()
+      rs.r.discunif($4, $4+$3-1)  // return source cell index
+      u.fill(0)  // u.x[i]==1 means spike source i has already been chosen
+      nsyn = 0
+      while (nsyn < $5 && nsyn < $3) {
+        r = rs.repick()
+        // no self-connection and only one connection from any source
+        if (r != gidvec.x[i]) if (u.x[r-$4] == 0) {
+          // target synapses
+          
+          for j = $6, $7 {
+            // set up connection from source to target
+            syn = cells.object(i).pre_list.object(j)
+            //nc = pc.gid_connect(r, syn)
+            nc = cells.object(r).connect2target(syn)
+            nclist.append(nc)
+            nc.delay = $8
+            nc.weight = $9
+          }
+          u.x[r-$4] = 1
+          nsyn += 1
+        }
+      }
+    }
+  }
+}
+
+//-------------------------------------------------------------------
+// proc connectEC_PC()
+//-------------------------------------------------------------------
+      
+// connects the EC input layer to PC cell
+// all-to-all connectivity between EC and PC pattern cells
+// appends the PC NetCons to a List called ncslist
+//proc connectEC_PC() {local i localobj cstim, syn, src, nc, fp, target, synN, randomize_location 
+
+proc connectEC_PC() {local i localobj cstim, syn, src, nc, fp, target, synN
+
+  	//  $1 - E_EC = 0, EC AMPA excit to medium SLM (2 of)
+  	//  $2 - 2
+
+  	ncelist = new List()
+  	target = cells.object(iPC)
+  
+  	syn = target.pre_list.object(29)	//connect EC first input to distal AMPA synapse on spine head 95
+  	synN = target.pre_list.object(30)	//connect EC first input to distal NMDA synapse on spine head 95
+  	  	
+  	//First iEC cell for spine95
+  	src = cells.object(iEC).stim
+			
+  	//EC on AMPA
+  	nc = new NetCon(src, syn)
+  	ncelist.append(nc)
+  	nc.delay = ECDEL
+  	nc.weight = 0
+
+  	
+  	//EC on NMDA
+  	nc = new NetCon(src, synN)
+  	ncelist.append(nc)
+  	nc.delay = ECDEL
+  	nc.weight = 0	
+
+
+  	//AMPA synapses EC-PC, index 0, 1 in pre_list 
+
+  	for k = $1, $1+$2-1 { //E_EC = 0, EC AMPA excit to medium SLM (2 of)
+      		syn = target.pre_list.object(k)	// excitatory synapse
+		// create pattern stimulus
+		for j=1, nEC-1 { //nEC = 20
+	    		src = cells.object(j+iEC).stim
+	    		// set up connection from source to target
+			nc = new NetCon(src, syn)
+			ncelist.append(nc)
+			nc.delay = ECDEL
+			nc.weight = EIWGT_EC_PC_AMPA //ECWGT  
+		}
+  	}
+  	
+  	//AMPA EC-PC distributed randomly, index 32-51 in pre_list 
+
+  	for k = $1, $1+$2-1 { //E_EC = 0, EC AMPA excit to medium SLM (2 of)
+      		syn = target.pre_list.object(k)	// excitatory synapse
+      		// create pattern stimulus
+		for j=0, nEC-1 { //nEC = 20
+          		syn=target.pre_list.object(j+32)
+	    		src = cells.object(j+iEC).stim
+	    		// set up connection from source to target
+				nc = new NetCon(src, syn)
+				ncelist.append(nc)
+				nc.delay = ECDEL
+				nc.weight = EIWGT_EC_PC_AMPAran
+		}
+  	}
+  
+}
+
+//-------------------------------------------------------------------
+// proc connectCA3()
+//-------------------------------------------------------------------
+// connects the CA3 input layer to output cells (PCs and INs)
+// read PC connections from a file, with connections to
+// a target being a column with index i for target cell i
+// appends the PC NetCons to a List called ncslist
+
+proc connectCA3() {local i, j, cp, gid  localobj src, syn, synN, nc, fc, rs, conns, rc, synSH107, synNSH107, synSH_SO5, synNSH_SO5,synCA3,synSH41, synNSH41
+     cp = $1	// connection probability
+     mcell_ran4_init(connect_random_low_start_)
+     conns = new Vector(nCA3)  // connection weights
+     rc = new Vector(nCA3)  // random physical connectivity
+     ncslist = new List()
+ 
+
+     //inputs to PCs determined by weight matrix
+     for i=0, cells.count-1 {	// loop over possible target cells cells.count=136
+         gid = gidvec.x[i]	// id of cell
+
+         if (gid >= iPC && gid < npcell+iPC) {	// appropriate target cell
+             		
+       
+             synSH_SO5 = cells.object(i).pre_list.object(24)	// AMPA synapse on SO spine head	
+	     synNSH_SO5 = cells.object(i).pre_list.object(25)	// NMDA synapse on SO spine head	
+	       
+             synSH41 = cells.object(i).pre_list.object(27)	// AMPA synapse on SR spine head	
+	     synNSH41 = cells.object(i).pre_list.object(28)	// NMDA synapse on SR spine head	
+
+             rs = ranlist.object(i)  // the corresponding RandomStream
+             rs.start()
+             rs.r.uniform(0, 1)  // return integer in range 0..1
+             rc.setrand(rs.r)	// generate random connectivity
+                      
+             //connect synapses with the inputs 
+             for j=0, nCA3-1 { // only connection if physical connection exists
+                  if (rc.x[j] <= cp) { 
+		   	     
+			     src = cells.object(j+iCA3).stim
+                	
+			     if (j == 0) {
+
+				//CA30 line
+	                    
+				   //AMPA synapse on SO spine head
+				   nc = new NetCon(src, synSH_SO5)
+				   ncslist.append(nc)
+                                   nc.delay = CDEL_CA3_0 
+				   nc.weight = 0  			//#0 in ncslist
+
+				   //NMDA synapse on spine head SO5
+				   nc = new NetCon(src, synNSH_SO5)
+				   ncslist.append(nc)
+				   nc.delay = CDEL_CA3_0	       
+				   nc.weight =0   			//#1 in ncslist
+
+
+				   //AMPA synapse on SR spine head  
+				   nc = new NetCon(src, synSH41)
+				   ncslist.append(nc)
+                                   nc.delay = CDEL_CA3_0 
+				   nc.weight = CHWGT_CA3_0_storage 
+
+				   //NMDA synapse on SR spine head 
+				   nc = new NetCon(src, synNSH41)
+				   ncslist.append(nc)
+				   nc.delay = CDEL_CA3_0	      //#2 in ncslist
+				   nc.weight = CNMDA_CA3_0_storage    //#3 in ncslist
+
+			
+			     } else {
+
+
+                                 //CA3 1-99 lines
+                         			         
+                                 syn = cells.object(i).pre_list.object(2)	// AMPA synapse 
+
+			         if (conns.x[j] == 1) {
+				       // set up connection from source to target
+				       //nc = pc.gid_connect(j+iCA3, syn)
+				       nc = new NetCon(src, syn)
+				       ncslist.append(nc)
+				       nc.delay = CDEL
+				       nc.weight =EIWGT_CA3_PC_AMPA_storage
+
+			          } else { 
+				    // set up connection from source to target
+				       nc = new NetCon(src, syn)
+				       ncslist.append(nc)
+				       nc.delay = CDEL
+				       nc.weight =CLWGT	
+			          }
+
+                           
+
+			    } //CA3 lines
+
+		}// if (rc.x[j] <= cp)  
+
+	   }// only connection if physical connection exists 
+     
+         //CA3-PC AMPA: connecting 100 randomly located synapses receiving 100 CA3 inputs (index 52-151 in pre_list_object) 
+  
+         for j=0, nCA3-1 { // only connection if physical connection exists
+             if (rc.x[j] <= cp) {
+
+		      src = cells.object(j+iCA3).stim
+
+                      synCA3 = cells.object(i).pre_list.object(51+j)	// random AMPA synapse receiving CA3 input	
+
+                           // high AMPA if weight is 1    
+			         if (conns.x[j] == 1) {
+				       // set up connection from source to target
+				       //nc = pc.gid_connect(j+iCA3, syn)
+				       nc = new NetCon(src, synCA3)
+				       ncslist.append(nc)
+				       nc.delay = CDEL
+				       nc.weight =EIWGT_CA3_PC_AMPAran_storage
+
+			          } else { 
+				    // set up connection from source to target
+				       nc = new NetCon(src, synCA3)
+				       ncslist.append(nc)
+				       nc.delay = CDEL
+				       nc.weight =CLWGT	
+			          }
+           
+                  
+		    }// if (rc.x[j] <= cp)  
+
+	      }// only connection if physical connection exists 
+
+          
+
+
+    }// appropriate target cell 
+
+  }//loop over target cell
+
+}
+
+//-------------------------------------------------------------------
+//proc mkEC()
+//-------------------------------------------------------------------
+
+// setup activity in EC stims
+
+proc mkEC() {local i, necs localobj cstim, rs
+  EClist = new Vector()
+  necs = 0
+  
+   for i=0, cells.count-1 {
+ 
+    gid = gidvec.x[i]	// id of cell
+   
+   //EC0 input
+
+   if (gid == iEC) {	// appropriate target cell
+  
+        // create cue stimulus
+    
+        cstim = cells.object(i).stim
+    	rs = ranlist.object(i)
+
+        //Burst
+        cstim.number =ECNUM_EC0
+        cstim.start =ECSTART_EC0   
+        cstim.interval = EC_BURST_SPIKE_INT
+        cstim.noise = EC_BURST_NOISE
+        cstim.burstint = EC_BURST_INT
+        cstim.burstlen = EC_BURST_LEN   
+
+
+        // Use the gid-specific random generator so random streams are
+        // independent of where and how many stims there are.
+        cstim.noiseFromRandom(rs.r)
+        rs.r.normal(0, 1)
+        rs.start()
+        EClist.append(i)
+        necs += 1
+    }
+ 
+    //EC inputs left
+
+    if (gid >= iEC+1 && gid < iEC+nEC) {	// appropriate target cell
+        // create cue stimulus
+        
+        cstim = cells.object(i).stim
+    	rs = ranlist.object(i)
+        //Burst 
+        cstim.number = ECNUM
+        cstim.start = EC_BURST_START
+        cstim.interval = EC_BURST_SPIKE_INT
+        cstim.noise = EC_BURST_NOISE
+        cstim.burstint = EC_BURST_INT
+        cstim.burstlen = EC_BURST_LEN
+    
+
+        // Use the gid-specific random generator so random streams are
+        // independent of where and how many stims there are.
+        cstim.noiseFromRandom(rs.r)
+        rs.r.normal(0, 1)
+        rs.start()
+        EClist.append(i)
+        necs += 1
+    }
+  }
+}
+
+
+
+//-------------------------------------------------------------------
+// proc mkcue() 
+//-------------------------------------------------------------------
+
+objref cue, fp
+
+// setup activity pattern in input cue stims
+//CA3 input: define activation parameters
+proc mkcue() {local i, j, ncue localobj cstim, target, rs
+  //print "Make cue (CA3) input..."
+  cuelist = new Vector()
+  // open patterns file
+  fp = new File($s1)
+  fp.ropen()
+  cue = new Vector(nCA3)
+  cue.scanf(fp, $2, $4)	// read pattern
+  fp.close()
+  ncue = 0
+
+  // find active cells in pattern
+  for i=0, cue.size()-1 {
+    
+    //if (!pc.gid_exists(i+iCA3)) { continue }
+    if (ncue <= SPATT*$3) { 	// fraction of active cells in cue
+       if (cue.x[i] == 1) {
+     
+              
+           cstim = cells.object(i+iCA3).stim
+           
+           for j=0, cells.count-1 {
+               if (gidvec.x[j] == i+iCA3) {break}	// find cell index
+           }
+
+
+    	  rs = ranlist.object(j)
+
+        //CA3 0 line 
+        if (i==0){
+
+            //Burst 
+            cstim.number = CNUM_CA3_0
+            cstim.start = CSTART_CA3_0
+            cstim.interval = CA3_BURST_SPIKE_INT_CA3_0
+            cstim.noise = CA3_BURST_NOISE_CA3_0
+            cstim.burstint = CA3_BURST_INT_CA3_0
+            cstim.burstlen = CA3_BURST_LEN_CA3_0
+
+       }
+
+       //CA3 other lines with noise
+       if (i>0){ 
+            //Burst
+            cstim.number = CNUM
+            cstim.start = CA3_BURST_START
+            cstim.interval = CA3_BURST_SPIKE_INT
+            cstim.noise = CA3_BURST_NOISE
+            cstim.burstint = CA3_BURST_INT
+            cstim.burstlen = CA3_BURST_LEN
+
+        }
+
+        // Use the gid-specific random generator so random streams are
+        // independent of where and how many stims there are.
+        cstim.noiseFromRandom(rs.r)
+        rs.r.normal(0, 1)
+        rs.start()
+        cuelist.append(i)
+        ncue += 1
+      }
+    }
+  }
+  
+}
+
+// remove activity pattern in input cue stims
+proc erasecue() {local i, j localobj cstim
+  for i=0, cuelist.size()-1 {
+    //if (!pc.gid_exists(i+iCA3)) { continue }
+    //cstim = pc.gid2cell(i+iCA3)
+    cstim = cells.object(cuelist.x[i]+iCA3).stim
+    cstim.number = 0
+  }
+}
+
+mknet_CA1(C_P)
+
+mkEC()
+
+mkcue(FPATT, CPATT, CFRAC, NPATT)	
+
+
+//-------------------------------------------------------------------
+//spike record CA3 raster plot 
+//-------------------------------------------------------------------
+
+objref ncCA3, timesCA3, neuronsCA3 
+objref list_spikesCA3, list_timesCA3, list_neuronsCA3
+
+list_spikesCA3=new List()  //contains objects to record spike times
+list_timesCA3=new List()
+list_neuronsCA3=new List()
+
+	// will be Vectors that record all spike times (tvec)
+	// and the corresponding id numbers of the cells that spiked (idvec)
+
+proc rasterCA3() {local i,in,nt,nn  localobj ncCA3, timesCA3, neuronsCA3, nil
+
+  for(in=6; in<106; in=in+1){   
+  
+        timesCA3 = new Vector()
+        neuronsCA3  = new Vector()
+  
+        list_timesCA3.append(timesCA3)
+
+        list_neuronsCA3.append(neuronsCA3)
+
+  	ncCA3 = cells.object(in).connect2target(nil) //CA3 first cell
+
+        list_spikesCA3.append(ncCA3)
+      
+        list_spikesCA3.object(in-6).record(list_timesCA3.object(in-6), list_neuronsCA3.object(in-6), i)
+ 	
+         ncCA3.record(timesCA3, neuronsCA3, i)
+    	// the Vector will continue to record spike times
+    	// even after the NetCon has been destroyed
+  
+  }
+  
+}
+
+
+rasterCA3()
+
+//-------------------------------------------------------------------
+//spike record EC raster plot 
+//-------------------------------------------------------------------
+
+objref ncEC, timesEC, neuronsEC 
+objref list_spikesEC, list_timesEC, list_neuronsEC
+
+list_spikesEC=new List()  //contains objects to record spike times
+list_timesEC=new List()
+list_neuronsEC=new List()
+
+	// will be Vectors that record all spike times (tvec)
+	// and the corresponding id numbers of the cells that spiked (idvec)
+
+
+proc rasterEC() {local i,in,nt,nn  localobj ncEC, timesEC, neuronsEC, nil
+
+  for(in=106; in<126; in=in+1){   
+
+        timesEC = new Vector()
+        neuronsEC  = new Vector()
+  
+        list_timesEC.append(timesEC)
+
+        list_neuronsEC.append(neuronsEC)
+
+  	ncEC = cells.object(in).connect2target(nil) //EC first cell
+
+        list_spikesEC.append(ncEC)
+      
+        list_spikesEC.object(in-106).record(list_timesEC.object(in-106), list_neuronsEC.object(in-106), i)
+ 	
+         ncEC.record(timesEC, neuronsEC, i)
+    	// the Vector will continue to record spike times
+    	// even after the NetCon has been destroyed
+  
+  }
+ 
+}
+
+rasterEC()
+
+
+//------------------------------------------------------------------
+//RUNNING
+//------------------------------------------------------------------
+
+
+
+//---------------------------------------
+//number of cycles storage-recall
+//---------------------------------------
+
+
+objref timeCycle_start, timeCycle_end
+
+timeCycle_start=new Vector()
+
+
+for(i_cycles=0; i_cycles<=n_cycles; i_cycles=i_cycles+1){
+
+	ts=(i_cycles+1)*125
+
+
+timeCycle_start.append(ts)
+
+
+}
+
+
+//---------------------------------------
+//proc advance()
+//---------------------------------------
+
+
+storage=1
+recall=0
+switch=0
+count_steps=0
+
+proc advance() {
+
+    fadvance()
+    
+
+
+    if (t<t_restart){ //
+
+             cells.object(0).spine_head41.cai=0.0001
+                
+             cells.object(0).spine_head41.pDOWN_BistableGBdownup=0
+
+             cells.object(0).spine_head41.pUP_BistableGBdownup=1   
+           
+    }
+     
+    //writing data into a file
+    fprint("%g\t%g\t%g\t%g\t%g\t%g\t%g\n",t, cells.object(0).soma[4].v(0.5), cells.object(0).spine_head41.v(0.5), 1000*cells.object(0).spine_head41.cai, cells.object(0).spine_head41.pDOWN_BistableGBdownup,  cells.object(0).spine_head41.pUP_BistableGBdownup,cells.object(0).spine_head95.v(0.5))
+
+   
+    //data file - columns: 
+    //1 t 							- time 
+    //2 cells.object(0).soma[4].v(0.5) 				- Vmem in soma
+    //3 cells.object(0).spine_head41.v(0.5) 			- Vmem in SR spine
+    //4 1000*cells.object(0).spine_head41.cai 			- Ca in SR spine
+    //5 cells.object(0).spine_head41.pDOWN_BistableGBdownup	- synaptic efficacy in DOWN state in SR spine  
+    //6 cells.object(0).spine_head41.pUP_BistableGBdownup   	- synaptic efficacy in UP state in SR spine  
+    //7 cells.object(0).apical_dendrite[95].v(0.5)		- Vmem in SLM dendrite
+
+//----------------------------
+//encoding and retrieval phases
+//---------------------------
+
+switch=0
+
+count_steps=count_steps+1
+
+    for(i_cycles=0; i_cycles<=n_cycles; i_cycles=i_cycles+1){
+       
+       if (abs(t-timeCycle_start.x[i_cycles])<0.025 && count_steps>5){
+
+		a=storage
+
+		storage=recall
+
+		recall=a
+
+	        switch=1
+
+                count_steps=0
+	
+        }
+
+    }
+
+   
+     if  (switch==1) {
+  
+     //-------------------------------------------------------
+     //Encoding phase
+     //-------------------------------------------------------
+
+     if (storage==1) {
+
+       	//CA3_0 line AMPA NMDA
+     	
+     	nsyn=ncslist.o(2)
+     	nsyn.weight=CHWGT_CA3_0_storage	 //CA3 AMPA 41 weight in storage
+
+     	nsyn=ncslist.o(3)
+     	nsyn.weight=CNMDA_CA3_0_storage     //CA3 NMDA 41 weight in storage
+     	  
+     	//CA3-PC AMPA fixed synapses
+     	for(is=4; is<=102; is=is+1){
+	    nsyn=ncslist.o(is)
+        	nsyn.weight=EIWGT_CA3_PC_AMPA_storage 			
+	}
+ 
+     	//CA3-PC AMPA random synapses
+     	for(is=103; is<=202; is=is+1){
+	    nsyn=ncslist.o(is)
+        	nsyn.weight=EIWGT_CA3_PC_AMPAran_storage 			
+	}
+
+      	//OLM cells to PC
+	for(is=1821; is<=1822; is=is+1){
+	    nsyn=nclist.o(is)
+        	nsyn.weight=OLMcell2Pcell_weight_storage 
+	}						
+
+	for(is=1823; is<=1824; is=is+1){
+	    nsyn=nclist.o(is)
+        	nsyn.weight=OLMcell2Pcell_GABAB_weight_storage
+	}
+
+    }
+
+    //-------------------------------------------------------
+    //Retrieval phase
+    //-------------------------------------------------------
+
+     if (recall==1) {
+      
+     	//CA3_0 line AMPA NMDA
+     	
+     	nsyn=ncslist.o(2)
+     	nsyn.weight=CHWGT_CA3_0_recall	 //CA3 AMPA 41 weight in recall
+   
+     	nsyn=ncslist.o(3)
+     	nsyn.weight=CNMDA_CA3_0_recall      //CA3 NMDA 41 weight in recall
+   
+     	//CA3-PC AMPA fixed synapses
+     	for(is=4; is<=102; is=is+1){
+	    nsyn=ncslist.o(is)
+        	nsyn.weight=EIWGT_CA3_PC_AMPA_recall 			
+	}
+
+     	//CA3-PC AMPA random synapses
+    
+     	for(is=103; is<=202; is=is+1){
+	    nsyn=ncslist.o(is)
+        	nsyn.weight=EIWGT_CA3_PC_AMPAran_recall 			
+	}
+   
+      	//OLM cells to PC
+    	for(is=1821; is<=1822; is=is+1){
+		nsyn=nclist.o(is)
+	        nsyn.weight=OLMcell2Pcell_weight_recall 	
+	}						
+
+	for(is=1823; is<=1824; is=is+1){
+		nsyn=nclist.o(is)
+        	nsyn.weight=OLMcell2Pcell_GABAB_weight_recall 	 
+	}
+ 
+   }
+
+}
+
+}
+
+//-------------------------------------------------------------------
+//run
+//-------------------------------------------------------------------
+
+if (i_ses==1){
+   xopen("PC.ses")
+   
+}
+
+wopen(filename)
+
+run()
+
+
+//-----------------------------------------------------------------
+//Writing into files CA3 and EC raster data
+//-----------------------------------------------------------------
+
+
+//----------------------------------------------
+//CA3 raster plot
+//----------------------------------------------
+
+
+wopen(filename_RasterCA3)
+
+//number of CA3 lines
+nlist=list_neuronsCA3.count()
+
+//index of active CA3 line for writing into a file 
+ind=0
+
+//spikes at the first line
+nspikes0=list_timesCA3.object(0).size()
+
+for(ni=0; ni<nlist; ni=ni+1){
+  
+	//number of spikes in the ni-th line
+	nspikes=list_timesCA3.object(ni).size()
+              
+        if (nspikes>0) {
+
+		ind=ind+1
+
+ 		fprint("%g\t",ind)
+
+		//over spikes of each neuron CA3; spike numer of the first line nspikes0 is default 
+		for(nii=0; nii<nspikes0; nii=nii+1){
+
+                        if (nii<nspikes) {
+
+				fprint("%8.1f\t",list_timesCA3.object(ni).x[nii] )
+
+			}else{
+
+				fprint("%8.1f\t",tstop+100 )
+                		
+			}    
+
+		}
+
+        fprint("\n")
+	
+	}	
+}
+
+
+//----------------------------------------------
+//EC raster plot
+//----------------------------------------------
+
+
+wopen(filename_RasterEC)
+
+//number of EC lines
+nlist=list_neuronsEC.count()
+
+//index of active EC line for writing into a file 
+ind=0
+
+//spikes at the first line
+nspikes0=list_timesEC.object(0).size()
+
+for(ni=0; ni<nlist; ni=ni+1){
+      
+	//number of spikes in the ni-th line
+	nspikes=list_timesEC.object(ni).size()
+
+        if (nspikes>0) {
+
+		ind=ind+1
+         
+ 		fprint("%g\t",ind)
+
+		//over spikes of each neuron EC; spike numer of the first line nspikes0 is default 
+		for(nii=0; nii<nspikes0; nii=nii+1){
+
+                        if (nii<nspikes) {
+
+				fprint("%8.1f\t",list_timesEC.object(ni).x[nii] )
+
+			}else{
+
+				fprint("%8.1f\t",tstop+100 )
+                		
+			}    
+
+		}
+
+        fprint("\n")
+	
+	}
+	
+}
+
+
+wopen()
+
+
+//quit()
