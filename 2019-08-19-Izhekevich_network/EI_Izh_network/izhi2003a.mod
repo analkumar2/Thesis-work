@@ -8,7 +8,11 @@
 NEURON {
   POINT_PROCESS Izhi2003a
   RANGE a,b,c,d,f,g,thresh
-  POINTER Ic, Iampar, Igabar
+  USEION izh READ iizh
+}
+
+UNITS {
+	(nA) = (nanoamp)
 }
 
 INITIAL {
@@ -24,9 +28,6 @@ PARAMETER {
   d = 2
   f = 5
   g = 140
-  Ic = 10
-  Iampar = 10
-  Igabar = 10
   taug = 1
   thresh=30
 }
@@ -34,6 +35,7 @@ PARAMETER {
 STATE { u V } : use V for voltage so don't interfere with built-in v of cell
 
 ASSIGNED {
+  iizh (nA)
 }
 
 BREAKPOINT {
@@ -41,7 +43,7 @@ BREAKPOINT {
 }
 
 DERIVATIVE states {
-  V' = 0.04*V*V + f*V + g - u + Ic + Iampar + Igabar
+  V' = 0.04*V*V + f*V + g - u + iizh
   u' = a*(b*V-u)
 }
 

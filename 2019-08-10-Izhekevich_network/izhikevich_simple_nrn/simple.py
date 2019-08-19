@@ -1,11 +1,11 @@
-'''Usage: 
+'''Usage:
 import simple
 h.run()
 simple.show()
 
 Sets up 5 models using default parameters in the .mod files
 2 versions of 2003/2004 parameterization: freestanding (3a); in section (3b)
-4 versions of 2007/2008 parameterization: freestanding (7a); in section with local integration of 'u' (7b); 
+4 versions of 2007/2008 parameterization: freestanding (7a); in section with local integration of 'u' (7b);
                                           in sec with STATE 'u' 7bS; in sec using wrapper class (7bw)
 can graph u, v for any model
 simple.show('v3a','v3b') # compare voltage output for the 2 versions of the 2003/2004 parameterization; will NOT be identical
@@ -52,10 +52,10 @@ iz07bw.izh.Iin = 70
 
 # vectors and plot
 h.tstop=1250
-#recd = {'u3a':[iz03a._ref_u], 'v3a':[iz03a._ref_V], 'u3b':[iz03b._ref_u], 'v3b':[sec03b(0.5)._ref_v], 
+#recd = {'u3a':[iz03a._ref_u], 'v3a':[iz03a._ref_V], 'u3b':[iz03b._ref_u], 'v3b':[sec03b(0.5)._ref_v],
 recd={   'u7a':[iz07a._ref_u], 'v7a':[iz07a._ref_V], 'u7b':[iz07b._ref_u], 'v7b':[sec07b(0.5)._ref_v],
         'u7bw':[iz07bw.izh._ref_u], 'v7bw':[iz07bw.sec(0.5)._ref_v]}
-[(v.append(h.Vector(h.tstop/h.dt+100)),v[1].record(v[0])) for x,v in recd.iteritems()]
+[(v.append(h.Vector(h.tstop/h.dt+100)),v[1].record(v[0])) for x,v in recd.items()]
 def vtvec(vv): return np.linspace(0, len(vv)*h.dt, len(vv), endpoint=True)
 
 # run and plot
@@ -67,9 +67,9 @@ def show (*vars):
   if len(vars)==0: vars=recd.keys()
   tvec=vtvec(recd['v7a'][1])
   plt.clf()
-  [plt.plot(tvec,v[1], label=x) for x,v in recd.iteritems() if x in vars]
+  [plt.plot(tvec,v[1], label=x) for x,v in recd.items() if x in vars]
   plt.legend()
-  pp.pprint([v[1].as_numpy()[-5:] for x,v in recd.iteritems() if x in vars])
+  pp.pprint([v[1].as_numpy()[-5:] for x,v in recd.items() if x in vars])
   plt.xlim(0,h.tstop)
 
 # h.run()
