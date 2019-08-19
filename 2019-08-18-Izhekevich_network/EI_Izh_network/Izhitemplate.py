@@ -27,9 +27,9 @@ GABAR.tau2 = 40
 GABAR.e = -80
 
 stim = h.IClampizhi(dummyE1(0.5)) #insert IClamp izhikevich version
-stim.delay = 2000
+stim.delay = 1500
 stim.dur = 500
-stim.amp = 5
+stim.amp = 4
 
 ArtinputE = h.NetStim() #Excitatory neuron input
 ArtinputE.interval = 20
@@ -58,7 +58,7 @@ v_vec.record(izhiE1._ref_V)
 t_vec.record(h._ref_t)
 
 h.finitialize(v_init)
-h.tstop = 3000
+h.tstop = 2500
 h.v_init = v_init
 h.run()
 
