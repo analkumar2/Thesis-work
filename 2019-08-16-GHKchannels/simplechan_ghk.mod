@@ -1,6 +1,6 @@
 TITLE simp channel
 : Simple calcium channel
-: This is not T-type calcium channel. It has been modified to test ghk
+: to test ghk
 
 UNITS {
 	(mA) = (milliamp)
@@ -34,7 +34,7 @@ PARAMETER {
 
 
 NEURON {
-	SUFFIX simp
+	SUFFIX simpghk
 	USEION ca READ cai,cao WRITE ica
         RANGE gcatbar, ica, gcat
         GLOBAL minf,mtau

@@ -1,6 +1,6 @@
 TITLE simp channel
 : Simple calcium channel
-: to test ghk
+: This is not T-type calcium channel. It has been modified to test ghk
 
 UNITS {
 	(mA) = (milliamp)
@@ -30,14 +30,13 @@ PARAMETER {
 	zetam = 2
 	vhalfm = -28
 	gmm=0.1
-	eca =140 (mV)
 }
 
 
 NEURON {
-	SUFFIX simpnernst
+	SUFFIX simp
 	USEION ca READ cai,cao WRITE ica
-        RANGE gcatbar, ica, gcat
+        RANGE gcatbar, ica, gcat, cai
         GLOBAL minf,mtau
 }
 
@@ -60,13 +59,37 @@ INITIAL {
 BREAKPOINT {
 	SOLVE states METHOD cnexp
 	gcat = gcatbar*m
-	ica = gcat*(v-eca)
+	ica = gcat*ghk(v,cai,cao)
+	:ica = gcat*1
+
 
 }
 
 DERIVATIVE states {	: exact when v held constant
 	rates(v)
 	m' = (minf - m)/mtau
+}
+
+
+FUNCTION ghk(v(mV), ci(mM), co(mM)) (mV) {
+        LOCAL nu,f
+
+        f = KTF(celsius)/2
+        nu = v/f
+        ghk=-f*(1. - (ci/co)*exp(nu))*efun(nu)
+}
+
+FUNCTION KTF(celsius (DegC)) (mV) {
+        KTF = ((25./293.15)*(celsius + 273.15))
+}
+
+
+FUNCTION efun(z) {
+	if (fabs(z) < 1e-4) {
+		efun = 1 - z/2
+	}else{
+		efun = z/(exp(z) - 1)
+	}
 }
 
 FUNCTION alpmt(v(mV)) {
