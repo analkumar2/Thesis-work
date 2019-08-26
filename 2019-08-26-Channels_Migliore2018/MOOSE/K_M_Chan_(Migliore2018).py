@@ -24,7 +24,7 @@ dV = (Vmax-Vmin)/Vdivs
 v = np.arange(Vmin,Vmax+dV, dV)
 Camin = 1e-12
 Camax = 3e-3
-Cadivs = 3000
+Cadivs = 4000
 dCa = (Camax-Camin)/Cadivs
 ca = np.arange(Camin,Camax+dCa, dCa)
 

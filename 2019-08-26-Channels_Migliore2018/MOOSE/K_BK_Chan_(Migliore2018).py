@@ -24,9 +24,9 @@ Vdivs = 3000
 # dV = (Vmax-Vmin)/Vdivs
 # v = np.arange(Vmin,Vmax, dV)
 v = np.linspace(Vmin,Vmax, Vdivs)
-Camin = 1e-12
-Camax = 400e-3
-Cadivs = 8000 #Enough for K_BK
+Camin = 0.04e-3 #If changing this, be careful that the dCa is at most 0.01e-3
+Camax = 500e-3
+Cadivs = 8000
 # dCa = (Camax-Camin)/Cadivs
 # ca = np.arange(Camin,Camax, dCa)
 ca = np.linspace(Camin,Camax, Cadivs)
@@ -40,6 +40,7 @@ def K_BK_Chan(name):
     K_BK.Ypower = 0.0
     K_BK.Zpower = 0.0
     K_BK.Xindex = 'VOLT_C1_INDEX'
+    K_BK.X = 0
 
     xgate = moose.element( K_BK.path + '/gateX' )
     xgate.xminA = Vmin

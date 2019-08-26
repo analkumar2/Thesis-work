@@ -1,5 +1,5 @@
-# T type calcium channel cat.mod Migliore2018
-# exec(open('Ca_T_Chan_(Migliore2018).py').read())
+# N type calcium channel can2.mod Migliore2018
+# exec(open('Ca_N_Chan_(Migliore2018).py').read())
 
 import numpy as np
 import pickle
@@ -24,26 +24,26 @@ Vdivs = 3000
 # v = np.arange(Vmin,Vmax, dV)
 v = np.linspace(Vmin,Vmax, Vdivs)
 Camin = 1e-12
-Camax = 1
-Cadivs = 400 # Enough for channels with ca dependence only because of ghk
+Camax = 3
+Cadivs = 4000
 # dCa = (Camax-Camin)/Cadivs
 # ca = np.arange(Camin,Camax, dCa)
 ca = np.linspace(Camin,Camax, Cadivs)
 
-def Ca_T_Chan(name):
-    Ca_T = moose.HHChannel2D( '/library/' + name )
-    Ca_T.Ek = ECa
-    Ca_T.Gbar = 300.0*SOMA_A
-    Ca_T.Gk = 0.0
-    Ca_T.Xpower = 2.0
-    Ca_T.Ypower = 1.0
-    Ca_T.Zpower = 1.0
-    Ca_T.Xindex = 'VOLT_INDEX'
-    Ca_T.Yindex = 'VOLT_INDEX'
-    Ca_T.Zindex = 'VOLT_C1_INDEX'
-    Ca_T.instant = 4
+def Ca_N_Chan(name):
+    Ca_N = moose.HHChannel2D( '/library/' + name )
+    Ca_N.Ek = ECa
+    Ca_N.Gbar = 300.0*SOMA_A
+    Ca_N.Gk = 0.0
+    Ca_N.Xpower = 2.0
+    Ca_N.Ypower = 1.0
+    Ca_N.Zpower = 1.0
+    Ca_N.Xindex = 'VOLT_INDEX'
+    Ca_N.Yindex = 'VOLT_INDEX'
+    Ca_N.Zindex = 'VOLT_C1_INDEX'
+    Ca_N.instant = 4
 
-    xgate = moose.element( Ca_T.path + '/gateX' )
+    xgate = moose.element( Ca_N.path + '/gateX' )
     xgate.xminA = Vmin
     xgate.xmaxA = Vmax
     xgate.xdivsA = Vdivs
@@ -57,7 +57,7 @@ def Ca_T_Chan(name):
     # xgate.ymaxB = Camax
     # xgate.ydivsB = Cadivs
 
-    ygate = moose.element( Ca_T.path + '/gateY' )
+    ygate = moose.element( Ca_N.path + '/gateY' )
     ygate.xminA = Vmin
     ygate.xmaxA = Vmax
     ygate.xdivsA = Vdivs
@@ -71,7 +71,7 @@ def Ca_T_Chan(name):
     # ygate.ymaxB = Camax
     # ygate.ydivsB = Cadivs
 
-    zgate = moose.element( Ca_T.path + '/gateZ' )
+    zgate = moose.element( Ca_N.path + '/gateZ' )
     zgate.xminA = Vmin
     zgate.xmaxA = Vmax
     zgate.xdivsA = Vdivs
@@ -86,50 +86,51 @@ def Ca_T_Chan(name):
     zgate.ydivsB = Cadivs
 
     cao = 2
-    q10 = 5
-    mmin=0.2
-    hmin=10
-    a0h =0.015
-    zetah = 3.5
-    vhalfh = -75
-    gmh=0.6
-    a0m =0.04
-    zetam = 2
-    vhalfm = -28
-    gmm=0.1
     z = 2
     T = celsius+273.15
+    ki=.001
+    q10=5
+    mmin = 0.2
+    hmin = 3
+    a0m =0.03
+    zetam = 2
+    vhalfm = -14
+    gmm=0.1
 
-    qt=q10**((celsius-25)/10)
-    a = 0.2*(-1.0*v*1e3+19.26)/(np.exp((-1.0*v*1e3+19.26)/10.0)-1.0)
-    b = 0.009*np.exp(-v*1e3/22.03)
-    minf = a/(a+b)
+    alph = 1.6e-4*np.exp(-v*1e3/48.4)
+    beth = 1/(np.exp((-v*1e3+39.0)/10.)+1.)
+    alpm = 0.1967*(-1.0*v*1e3+19.88)/(np.exp((-1.0*v*1e3+19.88)/10.0)-1.0)
+    betm = 0.046*np.exp(-v*1e3/20.73)
     alpmt = np.exp(0.0378*zetam*(v*1e3-vhalfm))
     betmt = np.exp(0.0378*zetam*gmm*(v*1e3-vhalfm))
-    mtau = betmt/(qt*a0m*(1+alpmt))
-    mtau[mtau<mmin]=mmin
+
+    qt=q10**((celsius-25)/10)
+    a = alpm
+    b = 1/(a + betm)
+    minf = a/(a+b)
+    minf = a*b
+    taum = betmt/(qt*a0m*(1+alpmt))
+    taum[taum<mmin/qt] = mmin/qt
     tblA = np.zeros([Vdivs,1])
     tblB = np.zeros([Vdivs,1])
     for i in np.arange(1):
-        tblA[:,i] = minf/mtau
-        tblB[:,i] = 1/mtau
+        tblA[:,i] = minf/taum
+        tblB[:,i] = 1/taum
         print(i, end='\r')
     xgate.tableA = tblA*1e3
     xgate.tableB = tblB*1e3
 
     qt=q10**((celsius-25)/10)
-    a = 1.e-6*np.exp(-v*1e3/16.26)
-    b = 1/(np.exp((-v*1e3+29.79)/10.)+1.)
-    hinf = a/(a+b)
-    alph = np.exp(0.0378*zetah*(v*1e3-vhalfh))
-    beth = np.exp(0.0378*zetah*gmh*(v*1e3-vhalfh))
-    htau = beth/(a0h*(1+alph))
-    htau[htau<hmin]=hmin
+    a = alph
+    b = 1/(a + beth)
+    hinf = a*b
+    tauh = 80*np.ones(len(hinf))
+    tauh[tauh<hmin] = hmin
     tblA = np.zeros([Vdivs,1])
     tblB = np.zeros([Vdivs,1])
     for i in np.arange(1):
-        tblA[:,i] = hinf/htau
-        tblB[:,i] = 1/htau
+        tblA[:,i] = hinf/tauh
+        tblB[:,i] = 1/tauh
         print(i, end='\r')
     ygate.tableA = tblA*1e3
     ygate.tableB = tblB*1e3
@@ -138,15 +139,15 @@ def Ca_T_Chan(name):
     tblA = np.zeros([Vdivs,Cadivs])
     tblB = np.zeros([Vdivs,Cadivs])
     for i in np.arange(Cadivs):
-        tblA[:,i] = v*(ca[i]/cao*ezfrt-1)/(ezfrt-1)/(v-ECa)
+        tblA[:,i] = ki/(ki+ca[i])*v*(ca[i]/cao*ezfrt-1)/(ezfrt-1)/(v-ECa)
         print(i, end='\r')
     tblB = tblA*0 +1
     zgate.tableA = tblA
     zgate.tableB = tblB
 
-    addmsg4 = moose.Mstring( Ca_T.path + '/addmsg4' )
+    addmsg4 = moose.Mstring( Ca_N.path + '/addmsg4' )
     addmsg4.value = '../Ca_conc concOut . concen'
 
-    addmsg2 = moose.Mstring( Ca_T.path + '/addmsg2' )
+    addmsg2 = moose.Mstring( Ca_N.path + '/addmsg2' )
     addmsg2.value = '. IkOut ../Ca_conc current'
-    return Ca_T
+    return Ca_N
