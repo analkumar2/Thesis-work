@@ -7,13 +7,13 @@ TITLE Slow Ca-dependent potassium current
                             :
                             :       + n cai <->     (alpha,beta)
                             :
-                            :   Following this model, the activation fct will be half-activated at 
+                            :   Following this model, the activation fct will be half-activated at
                             :   a concentration of Cai = (beta/alpha)^(1/n) = cac (parameter)
                             :
                             :   The mod file is here written for the case n=2 (2 binding sites)
                             :   ---------------------------------------------
                             :
-                            :   This current models the "slow" IK[Ca] (IAHP): 
+                            :   This current models the "slow" IK[Ca] (IAHP):
                             :      - potassium current
                             :      - activated by intracellular calcium
                             :      - NOT voltage dependent
@@ -23,13 +23,13 @@ TITLE Slow Ca-dependent potassium current
                             :   Ref: Destexhe et al., J. Neurophysiology 72: 803-818, 1994.
                             :   See also: http://www.cnl.salk.edu/~alain , http://cns.fmed.ulaval.ca
                             :   modifications by Yiota Poirazi 2001 (poirazi@LNC.usc.edu)
-			    :   taumin = 0.5 ms instead of 0.1 ms	
+			    :   taumin = 0.5 ms instead of 0.1 ms
 
                             NEURON {
                                     SUFFIX kca
                                     USEION k READ ek WRITE ik
                                     USEION ca READ cai
-                                    RANGE gk, gbar, m_inf, tau_m,ik
+                                    RANGE gk, gbar, m_inf, tau_m,i
                                     GLOBAL beta, cac
                             }
 
@@ -55,21 +55,23 @@ TITLE Slow Ca-dependent potassium current
                                   }
 
 
-                            STATE {m}        : activation variable to be solved in the DEs       
+                            STATE {m}        : activation variable to be solved in the DEs
 
-                            ASSIGNED {       : parameters needed to solve DE 
+                            ASSIGNED {       : parameters needed to solve DE
                                     ik      (mA/cm2)
+                                    i      (mA/cm2)
                                     m_inf
                                     tau_m   (ms)
                                     tadj
                             }
-                            BREAKPOINT { 
+                            BREAKPOINT {
                                     SOLVE states METHOD derivimplicit
                                     gk = gbar*m*m*m     : maximum channel conductance
-                                    ik = gk*(v - ek)    : potassium current induced by this channel
+                                    i = gk*(v - ek)    : potassium current induced by this channel
+                                    ik = i
                             }
 
-                            DERIVATIVE states { 
+                            DERIVATIVE states {
                                     evaluate_fct(v,cai)
                                     m' = (m_inf - m) / tau_m
                             }

@@ -11,22 +11,24 @@ F = 96485.3329
 R = 8.314
 celsius = 32
 dt = 0.05e-3
-ENa = 0.092 #from Deepanjali data
-EK = -0.100 #from Deepanjali data
+ENa = 0.092
+EK = -0.100
 Eh = -0.030
-ECa = 0.140 #from Deepanjali data
+ECa = 0.140
 Em = -0.065
 
 Vmin = -0.100
 Vmax = 0.100
 Vdivs = 3000
-dV = (Vmax-Vmin)/Vdivs
-v = np.arange(Vmin,Vmax+dV, dV)
+# dV = (Vmax-Vmin)/Vdivs
+# v = np.arange(Vmin,Vmax, dV)
+v = np.linspace(Vmin,Vmax, Vdivs)
 Camin = 1e-12
-Camax = 3e-3
-Cadivs = 3000
-dCa = (Camax-Camin)/Cadivs
-ca = np.arange(Camin,Camax+dCa, dCa)
+Camax = 1
+Cadivs = 400
+# dCa = (Camax-Camin)/Cadivs
+# ca = np.arange(Camin,Camax, dCa)
+ca = np.linspace(Camin,Camax, Cadivs)
 
 def Na_Chan(name):
     Na = moose.HHChannel( '/library/' + name )
@@ -34,11 +36,10 @@ def Na_Chan(name):
     Na.Gbar = 300.0*SOMA_A
     Na.Gk = 0.0
     Na.Xpower = 3.0
-    Na.Ypower = 1.0
-    Na.Zpower = 1
+    Na.Ypower = 1
+    Na.Zpower = 0
 
     sh2   = 0
-    gbar = 0.010
     tha  =  -30
     qa   = 7.2
     Ra   = 0.4
@@ -64,6 +65,7 @@ def Na_Chan(name):
     vvh=-58
     vvs=2
     a2=1
+    gbar = 0.010e4
 
     def trap0(v,th,a,q):
         if np.abs(v*1e3-th) > 1e-6:
@@ -84,12 +86,12 @@ def Na_Chan(name):
     htau[htau<hmin] = hmin
     hinf = 1/(1+np.exp((v*1e3-thinf-sh2)/qinf))
 
-    c = 1/(1+np.exp((v*1e3-vvh-sh2)/vvs))
-    sinf = c+a2*(1-c)
-    alps = np.exp(1.e-3*zetas*(v*1e3-vhalfs-sh2)*9.648e4/(8.315*(273.16+celsius)))
-    bets = np.exp(1.e-3*zetas*gms*(v*1e3-vhalfs-sh2)*9.648e4/(8.315*(273.16+celsius)))
-    taus = bets/(a0s*(1+alps))
-    taus[taus<smax] = smax
+    # c = 1/(1+np.exp((v*1e3-vvh-sh2)/vvs))
+    # sinf = c+a2*(1-c)
+    # alps = np.exp(1.e-3*zetas*(v*1e3-vhalfs-sh2)*9.648e4/(8.315*(273.16+celsius)))
+    # bets = np.exp(1.e-3*zetas*gms*(v*1e3-vhalfs-sh2)*9.648e4/(8.315*(273.16+celsius)))
+    # taus = bets/(a0s*(1+alps))
+    # taus[taus<smax] = smax
 
     xgate = moose.element( Na.path + '/gateX' )
     xgate.min = Vmin
@@ -105,10 +107,10 @@ def Na_Chan(name):
     ygate.tableA = hinf/htau*1e3
     ygate.tableB = 1.0/htau*1e3
 
-    zgate = moose.element( Na.path + '/gateZ' )
-    zgate.min = Vmin
-    zgate.max = Vmax
-    zgate.divs = Vdivs
-    zgate.tableA = sinf/taus*1e3
-    zgate.tableB = 1.0/taus*1e3
+    # zgate = moose.element( Na.path + '/gateZ' )
+    # zgate.min = Vmin
+    # zgate.max = Vmax
+    # zgate.divs = Vdivs
+    # zgate.tableA = sinf/taus*1e3
+    # zgate.tableB = 1.0/taus*1e3
     return Na

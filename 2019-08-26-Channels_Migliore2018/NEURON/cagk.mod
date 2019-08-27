@@ -17,7 +17,7 @@ NEURON {
 	SUFFIX cagk
 	USEION ca READ cai
 	USEION k READ ek WRITE ik
-	RANGE gbar,gkca,ik,o
+	RANGE gbar,gkca,o,i
 	GLOBAL oinf, tau
 }
 
@@ -44,6 +44,7 @@ PARAMETER {
 
 ASSIGNED {
 	ik		(mA/cm2)
+	i		(mA/cm2)
 	oinf
 	tau		(ms)
         gkca          (mho/cm2)
@@ -59,7 +60,8 @@ STATE {	o }		: fraction of open channels
 BREAKPOINT {
 	SOLVE state METHOD cnexp
 	gkca = gbar*o^st
-	ik = gkca*(v - ek)
+	i = gkca*(v - ek)
+	ik = i
 }
 
 DERIVATIVE state {	: exact when v held constant; integrates over dt step

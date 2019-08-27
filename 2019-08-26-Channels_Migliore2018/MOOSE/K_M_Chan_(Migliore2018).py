@@ -11,22 +11,24 @@ F = 96485.3329
 R = 8.314
 celsius = 32
 dt = 0.05e-3
-ENa = 0.092 #from Deepanjali data
-EK = -0.100 #from Deepanjali data
+ENa = 0.092
+EK = -0.100
 Eh = -0.030
-ECa = 0.140 #from Deepanjali data
+ECa = 0.140
 Em = -0.065
 
 Vmin = -0.100
 Vmax = 0.100
 Vdivs = 3000
-dV = (Vmax-Vmin)/Vdivs
-v = np.arange(Vmin,Vmax+dV, dV)
-Camin = 1e-12
-Camax = 3e-3
-Cadivs = 4000
-dCa = (Camax-Camin)/Cadivs
-ca = np.arange(Camin,Camax+dCa, dCa)
+# dV = (Vmax-Vmin)/Vdivs
+# v = np.arange(Vmin,Vmax, dV)
+v = np.linspace(Vmin,Vmax, Vdivs)
+Camin = 0.04e-3
+Camax = 500e-3
+Cadivs = 8000
+# dCa = (Camax-Camin)/Cadivs
+# ca = np.arange(Camin,Camax, dCa)
+ca = np.linspace(Camin,Camax, Cadivs)
 
 def K_M_Chan(name):
     K_M = moose.HHChannel( '/library/' + name )
@@ -47,6 +49,7 @@ def K_M_Chan(name):
     b0=60
     st=1
     sh =0
+    gbar=.0001e4
 
     qt=q10**((celsius-35)/10)
     inf = (1/(1 + np.exp((v*1e3-vhalfl-sh)/kl)))

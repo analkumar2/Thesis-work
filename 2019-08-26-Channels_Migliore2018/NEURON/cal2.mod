@@ -24,7 +24,7 @@ PARAMETER {
 	a0m =0.1
 	zetam = 2
 	vhalfm = 4
-	gmm=0.1	
+	gmm=0.1
 	ggk
 }
 
@@ -32,7 +32,7 @@ PARAMETER {
 NEURON {
 	SUFFIX cal
 	USEION ca READ cai,cao WRITE ica
-        RANGE gcalbar,cai, ica, gcal, ggk
+        RANGE gcalbar, gcal, ggk, i
         GLOBAL minf,tau
 }
 
@@ -42,6 +42,7 @@ STATE {
 
 ASSIGNED {
 	ica (mA/cm2)
+	i (mA/cm2)
         gcal (mho/cm2)
         minf
         tau   (ms)
@@ -56,7 +57,8 @@ BREAKPOINT {
 	SOLVE state METHOD cnexp
 	gcal = gcalbar*m*m*h2(cai)
 	ggk=ghk(v,cai,cao)
-	ica = gcal*ggk
+	i = gcal*ggk
+	ica = i
 
 }
 
@@ -95,14 +97,14 @@ FUNCTION bet(v(mV)) (1/ms) {
 }
 
 FUNCTION alpmt(v(mV)) {
-  alpmt = exp(0.0378*zetam*(v-vhalfm)) 
+  alpmt = exp(0.0378*zetam*(v-vhalfm))
 }
 
 FUNCTION betmt(v(mV)) {
-  betmt = exp(0.0378*zetam*gmm*(v-vhalfm)) 
+  betmt = exp(0.0378*zetam*gmm*(v-vhalfm))
 }
 
-DERIVATIVE state {  
+DERIVATIVE state {
         rate(v)
         m' = (minf - m)/tau
 }

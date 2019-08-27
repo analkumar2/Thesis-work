@@ -34,7 +34,7 @@ PARAMETER {
 NEURON {
 	SUFFIX kap
 	USEION k READ ek WRITE ik
-        RANGE gkabar,gka,ik
+        RANGE gkabar,gka,i
         GLOBAL ninf,linf,taul,taun,lmin
 }
 
@@ -45,6 +45,7 @@ STATE {
 
 ASSIGNED {
 	ik (mA/cm2)
+	i (mA/cm2)
         ninf
         linf
         taul
@@ -62,7 +63,8 @@ INITIAL {
 BREAKPOINT {
 	SOLVE states METHOD cnexp
 	gka = gkabar*n*l
-	ik = gka*(v-ek)
+	i = gka*(v-ek)
+	ik = i
 
 }
 

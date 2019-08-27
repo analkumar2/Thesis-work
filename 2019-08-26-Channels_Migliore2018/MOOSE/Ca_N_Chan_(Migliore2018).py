@@ -24,8 +24,8 @@ Vdivs = 3000
 # v = np.arange(Vmin,Vmax, dV)
 v = np.linspace(Vmin,Vmax, Vdivs)
 Camin = 1e-12
-Camax = 3
-Cadivs = 4000
+Camax = 1
+Cadivs = 10000 #Enough for Ca_N
 # dCa = (Camax-Camin)/Cadivs
 # ca = np.arange(Camin,Camax, dCa)
 ca = np.linspace(Camin,Camax, Cadivs)
@@ -96,6 +96,7 @@ def Ca_N_Chan(name):
     zetam = 2
     vhalfm = -14
     gmm=0.1
+    gcanbar=.0003e4
 
     alph = 1.6e-4*np.exp(-v*1e3/48.4)
     beth = 1/(np.exp((-v*1e3+39.0)/10.)+1.)

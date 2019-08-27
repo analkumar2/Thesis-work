@@ -5,7 +5,6 @@ import numpy as np
 import pickle
 import pandas as pd
 import moose
-import os
 
 SOMA_A = 3.14e-8
 F = 96485.3329
@@ -13,7 +12,7 @@ R = 8.314
 celsius = 32
 dt = 0.05e-3
 ENa = 0.092
-EK = -0.077
+EK = -0.100
 Eh = -0.030
 ECa = 0.140
 Em = -0.065
@@ -24,9 +23,9 @@ Vdivs = 3000
 # dV = (Vmax-Vmin)/Vdivs
 # v = np.arange(Vmin,Vmax, dV)
 v = np.linspace(Vmin,Vmax, Vdivs)
-Camin = 0.04e-3 #If changing this, be careful that the dCa is at most 0.01e-3
-Camax = 500e-3
-Cadivs = 8000
+Camin = 1e-12
+Camax = 400e-3
+Cadivs = 8000 #Enough for K_BK
 # dCa = (Camax-Camin)/Cadivs
 # ca = np.arange(Camin,Camax, dCa)
 ca = np.linspace(Camin,Camax, Cadivs)
@@ -40,7 +39,6 @@ def K_BK_Chan(name):
     K_BK.Ypower = 0.0
     K_BK.Zpower = 0.0
     K_BK.Xindex = 'VOLT_C1_INDEX'
-    K_BK.X = 0
 
     xgate = moose.element( K_BK.path + '/gateX' )
     xgate.xminA = Vmin
@@ -64,6 +62,7 @@ def K_BK_Chan(name):
     bbar = .48
     st=1
     F_KC = F/1000
+    gbar=.01e4
 
     exp1k1d1 = k1*np.exp(-2*d1*F_KC*v*1e3/R/(273.15 + celsius))
     exp1k2d2 = k2*np.exp(-2*d2*F_KC*v*1e3/R/(273.15 + celsius))

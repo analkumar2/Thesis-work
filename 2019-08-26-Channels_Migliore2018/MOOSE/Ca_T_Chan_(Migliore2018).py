@@ -24,8 +24,8 @@ Vdivs = 3000
 # v = np.arange(Vmin,Vmax, dV)
 v = np.linspace(Vmin,Vmax, Vdivs)
 Camin = 1e-12
-Camax = 3
-Cadivs = 4000
+Camax = 1
+Cadivs = 400 # Enough for channels with ca dependence only because of ghk
 # dCa = (Camax-Camin)/Cadivs
 # ca = np.arange(Camin,Camax, dCa)
 ca = np.linspace(Camin,Camax, Cadivs)
@@ -99,6 +99,7 @@ def Ca_T_Chan(name):
     gmm=0.1
     z = 2
     T = celsius+273.15
+    gcatbar=.003e4
 
     qt=q10**((celsius-25)/10)
     a = 0.2*(-1.0*v*1e3+19.26)/(np.exp((-1.0*v*1e3+19.26)/10.0)-1.0)

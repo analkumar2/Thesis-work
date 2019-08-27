@@ -28,7 +28,7 @@ PARAMETER {
 NEURON {
 	SUFFIX kmb
 	USEION k READ ek WRITE ik
-        RANGE  gbar,ik, sh
+        RANGE  gbar,i, sh
       GLOBAL inf, tau
 }
 
@@ -38,6 +38,7 @@ STATE {
 
 ASSIGNED {
 	ik (mA/cm2)
+	i (mA/cm2)
         inf
 	tau
         taua
@@ -52,16 +53,17 @@ INITIAL {
 
 BREAKPOINT {
 	SOLVE state METHOD cnexp
-	ik = gbar*m^st*(v-ek)
+	i = gbar*m^st*(v-ek)
+	ik = i
 }
 
 
 FUNCTION alpt(v(mV)) {
-  alpt = exp(0.0378*zetat*(v-vhalft-sh)) 
+  alpt = exp(0.0378*zetat*(v-vhalft-sh))
 }
 
 FUNCTION bett(v(mV)) {
-  bett = exp(0.0378*zetat*gmt*(v-vhalft-sh)) 
+  bett = exp(0.0378*zetat*gmt*(v-vhalft-sh))
 }
 
 DERIVATIVE state {
@@ -76,17 +78,3 @@ PROCEDURE rate(v (mV)) { :callable from hoc
         a = alpt(v)
         tau = b0 + bett(v)/(a0t*(1+a))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

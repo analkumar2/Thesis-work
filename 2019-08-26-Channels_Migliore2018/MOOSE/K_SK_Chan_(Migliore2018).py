@@ -11,22 +11,24 @@ F = 96485.3329
 R = 8.314
 celsius = 32
 dt = 0.05e-3
-ENa = 0.092 #from Deepanjali data
-EK = -0.100 #from Deepanjali data
+ENa = 0.092
+EK = -0.100
 Eh = -0.030
-ECa = 0.140 #from Deepanjali data
+ECa = 0.140
 Em = -0.065
 
 Vmin = -0.100
 Vmax = 0.100
 Vdivs = 3000
-dV = (Vmax-Vmin)/Vdivs
-v = np.arange(Vmin,Vmax+dV, dV)
-Camin = 1e-12
-Camax = 3e-3
-Cadivs = 3000
-dCa = (Camax-Camin)/Cadivs
-ca = np.arange(Camin,Camax+dCa, dCa)
+# dV = (Vmax-Vmin)/Vdivs
+# v = np.arange(Vmin,Vmax, dV)
+v = np.linspace(Vmin,Vmax, Vdivs)
+Camin = 1e-12 #If changing this, be careful that the dCa is at most 0.01e-3
+Camax = 100e-3 #3e-3 works because the tables becomes steady after 3e-3 for K_SK
+Cadivs = 4000
+# dCa = (Camax-Camin)/Cadivs
+# ca = np.arange(Camin,Camax, dCa)
+ca = np.linspace(Camin,Camax, Cadivs)
 
 def K_SK_Chan(name):
     K_SK = moose.HHChannel( '/library/' + name )
@@ -38,12 +40,11 @@ def K_SK_Chan(name):
     K_SK.Zpower = 3
     K_SK.useConcentration = 1
 
-    cai     = 2.4e-5
-    gbar    = 0.01
     beta    = 0.03
     cac     = 0.00035
     taumin  = 0.5
     q10 = 3
+    gbar    = 0.01e4
 
     tadj = q10**((celsius-22.0)/10)
     car = (ca/cac)**4
@@ -59,5 +60,5 @@ def K_SK_Chan(name):
     zgate.tableB = 1.0/tau_m*1e3
 
     addmsg3 = moose.Mstring( K_SK.path + '/addmsg3' )
-    addmsg3.value = '../Ca_conc    concOut    . concen'
+    addmsg3.value = '../Ca_conc concOut . concen'
     return K_SK

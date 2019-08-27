@@ -46,6 +46,7 @@ def K_D_Chan(name):
     nmax=2
     q10=1
     sh = 0
+    gkdbar=.01e4
 
     qt=q10**((celsius-24)/10)
     a = np.exp(1.e-3*zetan*(v*1e3-vhalfn-sh)*9.648e4/(8.315*(273.16+celsius)))

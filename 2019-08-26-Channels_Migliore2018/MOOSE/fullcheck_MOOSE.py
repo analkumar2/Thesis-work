@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import rdesigneur as rd
 
 try:
-    [moose.delete(x) for x in ['/model', '/library']]
-    # [moose.delete(x) for x in ['/model']]
+    # [moose.delete(x) for x in ['/model', '/library']]
+    [moose.delete(x) for x in ['/model']]
+    # moose.delete('/library/K_M_chan')
 except:
     pass
 
@@ -26,7 +27,7 @@ preStimTime = 1
 injectTime = 0.5
 postStimTime = 0.5
 runtime = preStimTime + injectTime + postStimTime
-Injectcurr = 0.5e-9
+Injectcurr = 7e-9
 
 rdes = rd.rdesigneur(
     elecPlotDt = elecPlotDt,
@@ -51,29 +52,30 @@ rdes = rd.rdesigneur(
         ['soma', 'RM', str(RM), 'RA', str(RA), 'CM', str(CM), 'initVm', str(Em), 'Em', str(Em)],
     ],
     chanDistrib = [
-        ['Ca_conc', 'soma', 'Ca_Basal', str(0.05e-3)],
-        ['Ca_L_chan', 'soma', 'Gbar', gbar],
-        ['Ca_N_chan', 'soma', 'Gbar', gbar],
-        ['Ca_T_chan', 'soma', 'Gbar', gbar],
-        ['h_chan', 'soma', 'Gbar', gbar],
-        ['K_A_chan', 'soma', 'Gbar', gbar],
-        ['K_BK_chan', 'soma', 'Gbar', gbar],
-        ['K_D_chan', 'soma', 'Gbar', gbar],
-        ['K_DR_chan', 'soma', 'Gbar', gbar],
-        ['K_M_chan', 'soma', 'Gbar', gbar],
-        ['K_SK_chan', 'soma', 'Gbar', gbar],
-        ['Na_chan', 'soma', 'Gbar', gbar],
+        ['Ca_conc', 'soma', 'CaBasal', str(0.05e-3)],
+        ['Ca_L_chan', 'soma', 'Gbar', '0.003e4'],
+        ['Ca_N_chan', 'soma', 'Gbar', '0.0003e4'],
+        ['Ca_T_chan', 'soma', 'Gbar', '0.003e4'],
+        ['h_chan', 'soma', 'Gbar', '0.0001e4'],
+        ['K_A_chan', 'soma', 'Gbar', '0.008e4'],
+        ['K_BK_chan', 'soma', 'Gbar', '0.01e4'],
+        ['K_D_chan', 'soma', 'Gbar', '0.01e4'],
+        ['K_DR_chan', 'soma', 'Gbar', '0.003e4'],
+        ['K_M_chan', 'soma', 'Gbar', '0.0001e4'],
+        ['K_SK_chan', 'soma', 'Gbar', '0.01e4'],
+        ['Na_chan', 'soma', 'Gbar', '0.010e4'],
     ],
     stimList = [
-        # ['soma', '1', '.', 'vclamp', f'-0.065 + (t>{preStimTime} && t<{preStimTime+injectTime}) * 0.075' ],
-        ['soma', '1', '.', 'inject', f'(t>={preStimTime} && t<={preStimTime+injectTime}) ? {Injectcurr} : 0'],
+        ['soma', '1', '.', 'vclamp', f'-0.065 + (t>{preStimTime} && t<{preStimTime+injectTime}) * 0.045' ],
+        # ['soma', '1', '.', 'inject', f'(t>={preStimTime} && t<={preStimTime+injectTime}) ? {Injectcurr} : 0'],
     ],
     plotList = [
         ['soma', '1', '.', 'Vm', 'Soma Membrane potential MOOSE'],
-        # ['soma', '1', 'vclamp', 'current', 'Soma holding current MOOSE'],
+        ['soma', '1', 'vclamp', 'current', 'Soma holding current MOOSE'],
         # ['soma', '1', ',', 'inject', 'Injected current MOOSE'],
-        # ['soma', '1', 'Ca_conc', 'Ca', 'soma calcium conc MOOSE'],
-        ['soma', '1', Chan, 'Ik', 'Channel current MOOSE'],
+        ['soma', '1', 'Ca_conc', 'Ca', 'soma calcium conc MOOSE'],
+        # ['soma', '1', 'K_M_chan', 'Ik', 'Channel current MOOSE'],
+        # ['soma', '1', 'Na_chan', 'Gk', 'Channel conductance MOOSE'],
     ],
 )
 

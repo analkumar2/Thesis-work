@@ -25,7 +25,7 @@ PARAMETER {
 NEURON {
 	SUFFIX kdb
 	USEION k READ ek WRITE ik
-        RANGE gkd,gkdbar, sh
+        RANGE gkd,gkdbar, sh, i
 	GLOBAL ninf,taun
 }
 
@@ -35,6 +35,7 @@ STATE {
 
 ASSIGNED {
 	ik (mA/cm2)
+	i (mA/cm2)
         ninf
         gkd
         taun
@@ -43,7 +44,8 @@ ASSIGNED {
 BREAKPOINT {
 	SOLVE states METHOD cnexp
 	gkd = gkdbar*n
-	ik = gkd*(v-ek)
+	i = gkd*(v-ek)
+	ik = i
 
 }
 

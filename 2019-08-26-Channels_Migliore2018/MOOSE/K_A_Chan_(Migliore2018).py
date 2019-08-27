@@ -54,6 +54,7 @@ def K_A_Chan(name):
     qq=5
     q10=5
     qtl=1
+    gkabar=.008e4
 
     qt=q10**((celsius-24)/10)
     zeta=zetan+pw/(1+np.exp((v*1e3-tq)/qq))

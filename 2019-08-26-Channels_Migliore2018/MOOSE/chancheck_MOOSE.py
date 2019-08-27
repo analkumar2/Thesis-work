@@ -11,9 +11,9 @@ try:
 except:
     pass
 
-ChP = 'Na_Chan_(Migliore2018)'
-Chan = 'Na_Chan'
-gbar = '100'
+ChP = 'K_SK_Chan_(Migliore2018)'
+Chan = 'K_SK_Chan'
+gbar = '100000'
 
 F = 96485.3329
 sm_diam = 20e-6
@@ -46,17 +46,17 @@ rdes = rd.rdesigneur(
     ],
     chanDistrib = [
         [Chan, 'soma', 'Gbar', gbar],
-        ['Ca_conc', 'soma', 'Ca_Basal', str(0.05e-3)],
+        ['Ca_conc', 'soma', 'Ca_base', str(0.05e-3)],
     ],
     stimList = [
-        # ['soma', '1', '.', 'vclamp', f'-0.065 + (t>{preStimTime} && t<{preStimTime+injectTime}) * 0.075' ],
-        ['soma', '1', '.', 'inject', f'(t>={preStimTime} && t<={preStimTime+injectTime}) ? {Injectcurr} : 0'],
+        ['soma', '1', '.', 'vclamp', f'-0.065 + (t>{preStimTime} && t<{preStimTime+injectTime}) * 0.035' ],
+        # ['soma', '1', '.', 'inject', f'(t>={preStimTime} && t<={preStimTime+injectTime}) ? {Injectcurr} : 0'],
     ],
     plotList = [
         ['soma', '1', '.', 'Vm', 'Soma Membrane potential MOOSE'],
-        # ['soma', '1', 'vclamp', 'current', 'Soma holding current MOOSE'],
+        ['soma', '1', 'vclamp', 'current', 'Soma holding current MOOSE'],
         # ['soma', '1', ',', 'inject', 'Injected current MOOSE'],
-        # ['soma', '1', 'Ca_conc', 'Ca', 'soma calcium conc MOOSE'],
+        ['soma', '1', 'Ca_conc', 'Ca', 'soma calcium conc MOOSE'],
         ['soma', '1', Chan, 'Ik', 'Channel current MOOSE'],
     ],
 )

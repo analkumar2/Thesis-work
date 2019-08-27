@@ -24,24 +24,25 @@ PARAMETER {
 	a0m =0.03
 	zetam = 2
 	vhalfm = -14
-	gmm=0.1	
+	gmm=0.1
 }
 
 
 NEURON {
 	SUFFIX can
 	USEION ca READ cai,cao WRITE ica
-        RANGE gcanbar, ica, gcan       
+        RANGE gcanbar, gcan, i
         GLOBAL hinf,minf,taum,tauh
 }
 
 STATE {
-	m h 
+	m h
 }
 
 ASSIGNED {
 	ica (mA/cm2)
-        gcan  (mho/cm2) 
+	i (mA/cm2)
+        gcan  (mho/cm2)
         minf
         hinf
         taum
@@ -57,7 +58,8 @@ INITIAL {
 BREAKPOINT {
 	SOLVE states METHOD cnexp
 	gcan = gcanbar*m*m*h*h2(cai)
-	ica = gcan*ghk(v,cai,cao)
+	i = gcan*ghk(v,cai,cao)
+	ica = i
 
 }
 
@@ -105,11 +107,11 @@ FUNCTION betm(v(mV)) {
 }
 
 FUNCTION alpmt(v(mV)) {
-  alpmt = exp(0.0378*zetam*(v-vhalfm)) 
+  alpmt = exp(0.0378*zetam*(v-vhalfm))
 }
 
 FUNCTION betmt(v(mV)) {
-  betmt = exp(0.0378*zetam*gmm*(v-vhalfm)) 
+  betmt = exp(0.0378*zetam*gmm*(v-vhalfm))
 }
 
 UNITSON

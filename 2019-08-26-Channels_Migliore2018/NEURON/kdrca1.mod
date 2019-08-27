@@ -26,7 +26,7 @@ PARAMETER {
 NEURON {
 	SUFFIX kdr
 	USEION k READ ek WRITE ik
-        RANGE gkdr,gkdrbar
+        RANGE gkdr,gkdrbar, i
 	GLOBAL ninf,taun
 }
 
@@ -36,6 +36,7 @@ STATE {
 
 ASSIGNED {
 	ik (mA/cm2)
+	i (mA/cm2)
         ninf
         gkdr
         taun
@@ -44,7 +45,8 @@ ASSIGNED {
 BREAKPOINT {
 	SOLVE states METHOD cnexp
 	gkdr = gkdrbar*n
-	ik = gkdr*(v-ek)
+	i = gkdr*(v-ek)
+	ik = i
 
 }
 
@@ -55,11 +57,11 @@ INITIAL {
 
 
 FUNCTION alpn(v(mV)) {
-  alpn = exp(1.e-3*zetan*(v-vhalfn)*9.648e4/(8.315*(273.16+celsius))) 
+  alpn = exp(1.e-3*zetan*(v-vhalfn)*9.648e4/(8.315*(273.16+celsius)))
 }
 
 FUNCTION betn(v(mV)) {
-  betn = exp(1.e-3*zetan*gmn*(v-vhalfn)*9.648e4/(8.315*(273.16+celsius))) 
+  betn = exp(1.e-3*zetan*gmn*(v-vhalfn)*9.648e4/(8.315*(273.16+celsius)))
 }
 
 DERIVATIVE states {     : exact when v held constant; integrates over dt step
@@ -75,17 +77,3 @@ PROCEDURE rates(v (mV)) { :callable from hoc
         taun = betn(v)/(qt*a0n*(1+a))
 	if (taun<nmax) {taun=nmax}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

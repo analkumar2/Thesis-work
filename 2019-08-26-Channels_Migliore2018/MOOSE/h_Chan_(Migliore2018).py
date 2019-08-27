@@ -47,6 +47,7 @@ def h_Chan(name):
     gmt=.4
     q10=4.5
     qtl=1
+    ghdbar=.0001e4
 
     qt=q10**((celsius-33)/10)
     alpt = np.exp(0.0378*zetat*(v*1e3-vhalft))

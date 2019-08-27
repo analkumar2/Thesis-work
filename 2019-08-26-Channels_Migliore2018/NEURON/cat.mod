@@ -36,7 +36,7 @@ PARAMETER {
 NEURON {
 	SUFFIX cat
 	USEION ca READ cai,cao WRITE ica
-        RANGE gcatbar, ica, gcat
+        RANGE gcatbar, gcat, i
         GLOBAL hinf,minf,mtau,htau
 }
 
@@ -46,6 +46,7 @@ STATE {
 
 ASSIGNED {
 	ica (mA/cm2)
+	i (mA/cm2)
         gcat (mho/cm2)
 	hinf
 	htau
@@ -62,8 +63,8 @@ INITIAL {
 BREAKPOINT {
 	SOLVE states METHOD cnexp
 	gcat = gcatbar*m*m*h
-	:gcat = gcatbar*m
-	ica = gcat*ghk(v,cai,cao)
+	i = gcat*ghk(v,cai,cao)
+	ica = i
 
 }
 
