@@ -30,19 +30,19 @@ soma(0.5).ena = 92
 h.celsius = 32
 
 
-# stim = h.IClamp(soma(0.5))
-# stim.delay = 1000
-# stim.dur = 500
-# stim.amp = 7
+stim = h.IClamp(soma(0.5))
+stim.delay = 1000
+stim.dur = 500
+stim.amp = 10
 
-stim = h.SEClamp(soma(0.5))
-stim.rs = 0.000001
-stim.dur1 = 1000
-stim.dur2 = 500
-stim.dur3 = 500
-stim.amp1 = -65
-stim.amp2 = -20
-stim.amp3 = -65
+# stim = h.SEClamp(soma(0.5))
+# stim.rs = 0.000001
+# stim.dur1 = 1000
+# stim.dur2 = 500
+# stim.dur3 = 500
+# stim.amp1 = -65
+# stim.amp2 = 20
+# stim.amp3 = -65
 
 t_vec = h.Vector()             # Time stamp vector
 v_vec = h.Vector()             # Membrane potential vector
@@ -86,13 +86,13 @@ ax2.set_title('Model in NEURON')
 # ax3.legend()
 # ax3.set_title('Model in NEURON')
 
-fig4, ax4 = plt.subplots()
-ax4.plot(t_vec,ihold_vec,label = 'Holding current')
-ax4.set_xlabel('Time (ms)')
-ax4.set_ylabel('Holding current (nA)')
-ax4.legend()
-# ax4.set_ylim(-2, 2)
-ax4.set_title('Model in NEURON')
+# fig4, ax4 = plt.subplots()
+# ax4.plot(t_vec,ihold_vec,label = 'Holding current')
+# ax4.set_xlabel('Time (ms)')
+# ax4.set_ylabel('Holding current (nA)')
+# ax4.legend()
+# # ax4.set_ylim(-2, 2)
+# ax4.set_title('Model in NEURON')
 
 # fig5, ax5 = plt.subplots()
 # gate_vec = np.array(gate_vec)
