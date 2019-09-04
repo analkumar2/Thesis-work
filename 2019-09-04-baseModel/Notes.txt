@@ -1,0 +1,51 @@
+Na_chan opening probability at -65mV = 1.41e-5
+Na_chan opening probability at -70mV = 1.856e-6
+K_M_chan opening probability at -65mV = 7.59e-2
+K_M_chan opening probability at -70mV = 4.74e-2
+K_DR_chan opening probability at -65mV = 1.37e-4
+K_DR_chan opening probability at -70mV = 7.73e-5
+K_D_chan opening probability at -65mV = 97.5e-2
+K_D_chan opening probability at -70mV = 98.6e-2
+K_A_chan opening probability at -65mV = 5.47e-4
+K_A_chan opening probability at -70mV = 3.79e-4
+h_chan opening probability at -65mV = 11.9e-2
+h_chan opening probability at -70mV = 20.2e-2
+Ca_T_chan opening probability at -65mV = 5.87e-5
+Ca_T_chan opening probability at -70mV = 2.43e-5
+
+Ca_L_chan opening probability at -65mV, 0.05e-3mM = 2.28e-11
+Ca_L_chan opening probability at -65mV, 0.1e-3mM = 2.17e-11
+Ca_L_chan opening probability at -65mV, 1e-3mM = 1.20e-11
+Ca_L_chan opening probability at -65mV, 2e-3mM = 7.97e-12
+Ca_L_chan opening probability at -70mV, 0.05e-3mM = 3.75e-12
+Ca_L_chan opening probability at -70mV, 0.1e-3mM = 3.57e-12
+Ca_L_chan opening probability at -70mV, 1e-3mM = 1.97e-12
+Ca_L_chan opening probability at -70mV, 2e-3mM = 1.31e-12
+
+Ca_N_chan opening probability at -65mV, 0.05e-3mM = 3.05e-6
+Ca_N_chan opening probability at -65mV, 0.1e-3mM = 2.90e-6
+Ca_N_chan opening probability at -65mV, 1e-3mM = 1.60e-6
+Ca_N_chan opening probability at -65mV, 2e-3mM = 1.06e-6
+Ca_N_chan opening probability at -70mV, 0.05e-3mM = 8.34e-7
+Ca_N_chan opening probability at -70mV, 0.1e-3mM = 7.95e-7
+Ca_N_chan opening probability at -70mV, 1e-3mM = 4.37e-7
+Ca_N_chan opening probability at -70mV, 2e-3mM = 2.91e-7
+
+
+K_BK_chan opening probability at -65mV, 0.05e-3mM = 3.55e-3
+K_BK_chan opening probability at -65mV, 0.1e-3mM = 1.22e-2
+K_BK_chan opening probability at -65mV, 1e-3mM = 50.7e-2
+K_BK_chan opening probability at -65mV, 2e-3mM = 79.9e-2
+K_BK_chan opening probability at -70mV, 0.05e-3mM = 1.99e-3
+K_BK_chan opening probability at -70mV, 0.1e-3mM = 6.52e-3
+K_BK_chan opening probability at -70mV, 1e-3mM = 34.3e-2
+K_BK_chan opening probability at -70mV, 2e-3mM = 66.8e-2
+
+K_SK_chan opening probability at -65mV, 0.05e-3mM = 7.23e-11
+K_SK_chan opening probability at -65mV, 0.1e-3mM = 2.90e-7
+K_SK_chan opening probability at -65mV, 1e-3mM = 95.6e-2
+K_SK_chan opening probability at -65mV, 2e-3mM = 99.7e-2
+K_SK_chan opening probability at -70mV, 0.05e-3mM = 7.23e-11
+K_SK_chan opening probability at -70mV, 0.1e-3mM = 2.90e-7
+K_SK_chan opening probability at -70mV, 1e-3mM = 95.6e-2
+K_SK_chan opening probability at -70mV, 2e-3mM = 99.7e-2
