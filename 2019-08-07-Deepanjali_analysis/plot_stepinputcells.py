@@ -11,7 +11,7 @@ from neo.io import AxonIO
 import os
 from tkinter.filedialog import askdirectory
 
-Direc = 'Deepanjali data/WT step input cells/' #Directory where all the files are stored
+Direc = '../../Raw_data/Deepanjali_data/WT step input cells/' #Directory where all the files are stored
 CurrAmp = 10 #0 is for -100pA, 1 for -75pA, and so on till 20 which is 400pA. 10 for 150pA
 # flist = os.listdir(Direc)
 flist = ['Cell 1 of 12617.abf']
