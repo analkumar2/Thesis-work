@@ -1,4 +1,4 @@
-#exec(open('ChannelSliderv2.py').read())
+#exec(open('ChannelSlider.py').read())
 
 import os
 import sys
@@ -146,25 +146,25 @@ def calcPr(Vrest=-0.07, Carest=0.13e-3):
             idx = np.argmin(abs(v-Vrest))
             Pr[chan.name] = gate.tableA[idx]/gate.tableB[idx] #Since we don't care about channels other than h, KM, and KD
 
-def set_initialGk(Vrest=-0.07, Carest=0.13e-3):
-    for chan in moose.wildcardFind('/model/elec/soma/#[TYPE=HHChannel]'):
-        chan.Gk = chan.Gbar*chan.X**chan.Xpower*chan.Y**chan.Ypower*chan.Z**chan.Zpower
-    for chan in moose.wildcardFind('/model/elec/soma/#[TYPE=HHChannel2D]'):
-        chan.Gk = chan.Gbar*chan.X**chan.Xpower*chan.Y**chan.Ypower*chan.Z**chan.Zpower
+# def set_initialGk(Vrest=-0.07, Carest=0.13e-3):
+#     for chan in moose.wildcardFind('/model/elec/soma/#[TYPE=HHChannel]'):
+#         chan.Gk = chan.Gbar*chan.X**chan.Xpower*chan.Y**chan.Ypower*chan.Z**chan.Zpower
+#     for chan in moose.wildcardFind('/model/elec/soma/#[TYPE=HHChannel2D]'):
+#         chan.Gk = chan.Gbar*chan.X**chan.Xpower*chan.Y**chan.Ypower*chan.Z**chan.Zpower
 
-exec(open('Modelfuncv2.py').read())
+exec(open('Modelfunc.py').read())
 # tinitial = time.time()
 if os.path.exists(f'../../Output/{foldername}/Parametersdf.csv'):
     prevrun = 1
-    Parameters = pd.read_csv(f'../../Output/{foldername}/Parametersdf.csv').tail(1)
-    Pl = Parameters.to_dict('list')
-    Parameters = {key:Pl[key][0] for key in Pl.keys()}
+    invidx = 1
+    Pl = pd.read_csv(f'../../Output/{foldername}/Parametersdf.csv').tail(invidx).iloc[0]
+    Parameters = {key:Pl[key] for key in Pl.keys()}
 else:
     prevrun = 0
     Parameters = {}
     Parameters['sm_diam'] = sm_diam
     Parameters['sm_len'] = sm_len
-    Parameters['RM'] = 1.843
+    Parameters['RM'] = 2.053773343
     Parameters['CM'] = CM
     Parameters['Em'] = Vrest
     Parameters['Ca_concCaBasal'] = 0.05e-3
@@ -172,20 +172,20 @@ else:
     Parameters['Ca_concB'] = 2291006575
     Parameters['Ca_L_changbar'] = 4.568
     Parameters['Ca_N_changbar'] = 52.68
-    Parameters['Ca_T_changbar'] = 0.66
-    Parameters['h_changbar'] = 0.132876
-    Parameters['K_A_changbar'] = 10.7373
-    Parameters['K_BK_changbar'] = 0.00713856
-    Parameters['K_D_changbar'] = 0.0002146
-    Parameters['K_DR_changbar'] = 1.5557
-    Parameters['K_M_changbar'] = 1.127
-    Parameters['K_SK_changbar'] = 0.00269
-    Parameters['Na_changbar'] = 54.7685
+    Parameters['Ca_T_changbar'] = 0.662
+    Parameters['h_changbar'] = 0.132
+    Parameters['K_A_changbar'] = 10.64
+    Parameters['K_BK_changbar'] = 0.00721
+    Parameters['K_D_changbar'] = 0.000219033
+    Parameters['K_DR_changbar'] = 1.485
+    Parameters['K_M_changbar'] = 1.128
+    Parameters['K_SK_changbar'] = 0.00259
+    Parameters['Na_changbar'] = 54.769
 
 [Parameters, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=runtime, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'], Ca_concCaBasal=str(Parameters['Ca_concCaBasal']), Ca_conctau=str(Parameters['Ca_conctau']), Ca_L_changbar=str(Parameters['Ca_L_changbar']), Ca_N_changbar=str(Parameters['Ca_N_changbar']), Ca_T_changbar=str(Parameters['Ca_T_changbar']), h_changbar=str(Parameters['h_changbar']), K_A_changbar=str(Parameters['K_A_changbar']), K_BK_changbar=str(Parameters['K_BK_changbar']), K_D_changbar=str(Parameters['K_D_changbar']), K_DR_changbar=str(Parameters['K_DR_changbar']), K_M_changbar=str(Parameters['K_M_changbar']), K_SK_changbar=str(Parameters['K_SK_changbar']), Na_changbar=str(Parameters['Na_changbar']))
 print(Parameters)
 # set_initialgatevalues(Vrest=Vrest, Carest=0.13e-3)
-calcPr(Vrest=Vrest, Carest=0.13e-3)
+# calcPr(Vrest=Vrest, Carest=0.13e-3)
 ########### Defining some Matplotlib functions####################
 def donothing(val):
     pass
@@ -252,22 +252,22 @@ axcolor = 'lightgoldenrodyellow'
 for x in np.linspace(0.5,0.1,16):
     axes_list.append(plt.axes([0.1, x, 0.8, 0.02], facecolor=axcolor))
 
-sliders_list.append(Slider(axes_list[0], 'Em', Parameters['Em']-0.010, Parameters['Em']+0.010, valinit=Parameters['Em']))
-sliders_list.append(Slider(axes_list[1], 'gl', mingl, Gin/sm_area, valinit=1/Parameters['RM']))
-sliders_list.append(Slider(axes_list[2], 'Ca_concCaBasal', Parameters['Ca_concCaBasal']*0.1, Parameters['Ca_concCaBasal']*10, valinit=Parameters['Ca_concCaBasal']))
-sliders_list.append(Slider(axes_list[3], 'Ca_conctau', Parameters['Ca_conctau']*0.1, Parameters['Ca_conctau']*10, valinit=Parameters['Ca_conctau']))
-sliders_list.append(Slider(axes_list[4], 'Ca_concB', Parameters['Ca_concB']*0.1, Parameters['Ca_concB']*10, valinit=Parameters['Ca_concB']))
-sliders_list.append(Slider(axes_list[5], 'Ca_L_changbar', Parameters['Ca_L_changbar']*0.1, Parameters['Ca_L_changbar']*10, valinit=Parameters['Ca_L_changbar']))
-sliders_list.append(Slider(axes_list[6], 'Ca_N_changbar', Parameters['Ca_N_changbar']*0.1, Parameters['Ca_N_changbar']*10, valinit=Parameters['Ca_N_changbar']))
-sliders_list.append(Slider(axes_list[7], 'Ca_T_changbar', Parameters['Ca_T_changbar']*0.1, Parameters['Ca_T_changbar']*10, valinit=Parameters['Ca_T_changbar']))
-sliders_list.append(Slider(axes_list[8], 'h_changbar', Parameters['h_changbar']*0.1, Parameters['h_changbar']*10, valinit=Parameters['h_changbar']))
-sliders_list.append(Slider(axes_list[9], 'K_A_changbar', Parameters['K_A_changbar']*0.1, Parameters['K_A_changbar']*10, valinit=Parameters['K_A_changbar']))
-sliders_list.append(Slider(axes_list[10], 'K_BK_changbar', Parameters['K_BK_changbar']*0.1, Parameters['K_BK_changbar']*10, valinit=Parameters['K_BK_changbar']))
-sliders_list.append(Slider(axes_list[11], 'K_D_changbar', Parameters['K_D_changbar']*0.1, Parameters['K_D_changbar']*10, valinit=Parameters['K_D_changbar']))
-sliders_list.append(Slider(axes_list[12], 'K_DR_changbar', Parameters['K_DR_changbar']*0.1, Parameters['K_DR_changbar']*10, valinit=Parameters['K_DR_changbar']))
-sliders_list.append(Slider(axes_list[13], 'K_M_changbar', Parameters['K_M_changbar']*0.1, Parameters['K_M_changbar']*10, valinit=Parameters['K_M_changbar']))
-sliders_list.append(Slider(axes_list[14], 'K_SK_changbar', Parameters['K_SK_changbar']*0.1, Parameters['K_SK_changbar']*10, valinit=Parameters['K_SK_changbar']))
-sliders_list.append(Slider(axes_list[15], 'Na_changbar', Parameters['Na_changbar']*0.1, Parameters['Na_changbar']*10, valinit=Parameters['Na_changbar']))
+sliders_list.append(Slider(axes_list[0], 'Em', Parameters['Em']-0.010, Parameters['Em']+0.010, valinit=Parameters['Em'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[1], 'gl', mingl, Gin/sm_area, valinit=1/Parameters['RM'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[2], 'Ca_concCaBasal', Parameters['Ca_concCaBasal']*0.1, Parameters['Ca_concCaBasal']*10, valinit=Parameters['Ca_concCaBasal'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[3], 'Ca_conctau', Parameters['Ca_conctau']*0.1, Parameters['Ca_conctau']*10, valinit=Parameters['Ca_conctau'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[4], 'Ca_concB', Parameters['Ca_concB']*0.1, Parameters['Ca_concB']*10, valinit=Parameters['Ca_concB'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[5], 'Ca_L_changbar', Parameters['Ca_L_changbar']*0.1, Parameters['Ca_L_changbar']*10, valinit=Parameters['Ca_L_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[6], 'Ca_N_changbar', Parameters['Ca_N_changbar']*0.1, Parameters['Ca_N_changbar']*10, valinit=Parameters['Ca_N_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[7], 'Ca_T_changbar', Parameters['Ca_T_changbar']*0.1, Parameters['Ca_T_changbar']*10, valinit=Parameters['Ca_T_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[8], 'h_changbar', Parameters['h_changbar']*0.1, Parameters['h_changbar']*10, valinit=Parameters['h_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[9], 'K_A_changbar', Parameters['K_A_changbar']*0.1, Parameters['K_A_changbar']*10, valinit=Parameters['K_A_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[10], 'K_BK_changbar', Parameters['K_BK_changbar']*0.1, Parameters['K_BK_changbar']*10, valinit=Parameters['K_BK_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[11], 'K_D_changbar', Parameters['K_D_changbar']*0.1, Parameters['K_D_changbar']*10, valinit=Parameters['K_D_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[12], 'K_DR_changbar', Parameters['K_DR_changbar']*0.1, Parameters['K_DR_changbar']*10, valinit=Parameters['K_DR_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[13], 'K_M_changbar', Parameters['K_M_changbar']*0.1, Parameters['K_M_changbar']*10, valinit=Parameters['K_M_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[14], 'K_SK_changbar', Parameters['K_SK_changbar']*0.1, Parameters['K_SK_changbar']*10, valinit=Parameters['K_SK_changbar'], valfmt="%1.2e"))
+sliders_list.append(Slider(axes_list[15], 'Na_changbar', Parameters['Na_changbar']*0.1, Parameters['Na_changbar']*10, valinit=Parameters['Na_changbar'], valfmt="%1.2e"))
 for s in sliders_list:
     cid.append(s.on_changed(update))
 
@@ -331,7 +331,7 @@ def curr(text):
     global Cavec
     global tvec
     Injectcurr = eval(text)
-    [Parameters, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=runtime, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'], Ca_concCaBasal=str(Parameters['Ca_concCaBasal']), Ca_L_changbar=str(Parameters['Ca_L_changbar']), Ca_N_changbar=str(Parameters['Ca_N_changbar']), Ca_T_changbar=str(Parameters['Ca_T_changbar']), h_changbar=str(Parameters['h_changbar']), K_A_changbar=str(Parameters['K_A_changbar']), K_BK_changbar=str(Parameters['K_BK_changbar']), K_D_changbar=str(Parameters['K_D_changbar']), K_DR_changbar=str(Parameters['K_DR_changbar']), K_M_changbar=str(Parameters['K_M_changbar']), K_SK_changbar=str(Parameters['K_SK_changbar']), Na_changbar=str(Parameters['Na_changbar']))
+    [Parameters, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'], Ca_concCaBasal=str(Parameters['Ca_concCaBasal']), Ca_L_changbar=str(Parameters['Ca_L_changbar']), Ca_N_changbar=str(Parameters['Ca_N_changbar']), Ca_T_changbar=str(Parameters['Ca_T_changbar']), h_changbar=str(Parameters['h_changbar']), K_A_changbar=str(Parameters['K_A_changbar']), K_BK_changbar=str(Parameters['K_BK_changbar']), K_D_changbar=str(Parameters['K_D_changbar']), K_DR_changbar=str(Parameters['K_DR_changbar']), K_M_changbar=str(Parameters['K_M_changbar']), K_SK_changbar=str(Parameters['K_SK_changbar']), Na_changbar=str(Parameters['Na_changbar']))
     exp_trace = exp_tracef(Injectcurr=Injectcurr)
     print(Injectcurr)
     l.set_ydata(Vmvec)

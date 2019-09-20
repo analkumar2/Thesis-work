@@ -1,4 +1,4 @@
-# exec(open('Deepanjali data/plot_stepinputcells.py').read())
+# exec(open('plot_stepinputcells.py').read())
 
 # Plots all the data one by one
 # -100pA to 400pA
@@ -12,9 +12,9 @@ import os
 from tkinter.filedialog import askdirectory
 
 Direc = '../../Raw_data/Deepanjali_data/WT step input cells/' #Directory where all the files are stored
-CurrAmp = 10 #0 is for -100pA, 1 for -75pA, and so on till 20 which is 400pA. 10 for 150pA
+CurrAmp = 5 #0 is for -100pA, 1 for -75pA, and so on till 20 which is 400pA. 10 for 150pA
 # flist = os.listdir(Direc)
-flist = ['Cell 1 of 12617.abf']
+flist = ['cell 4 of 61016.abf']
 
 i = 0
 print(os.listdir(Direc))
