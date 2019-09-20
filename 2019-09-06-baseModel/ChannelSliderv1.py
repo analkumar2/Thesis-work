@@ -118,7 +118,7 @@ def update(val):
     Parameters['Na_changbar'] = [sliders_list[15].val]
 
     print(Parameters)
-    [Parametersout, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'][0], Ca_concCaBasal=str(Parameters['Ca_concCaBasal'][0]), Ca_L_changbar=str(Parameters['Ca_L_changbar'][0]), Ca_N_changbar=str(Parameters['Ca_N_changbar'][0]), Ca_T_changbar=str(Parameters['Ca_T_changbar'][0]), h_changbar=str(Parameters['h_changbar'][0]), K_A_changbar=str(Parameters['K_A_changbar'][0]), K_BK_changbar=str(Parameters['K_BK_changbar'][0]), K_D_changbar=str(Parameters['K_D_changbar'][0]), K_DR_changbar=str(Parameters['K_DR_changbar'][0]), K_M_changbar=str(Parameters['K_M_changbar'][0]), K_SK_changbar=str(Parameters['K_SK_changbar'][0]), Na_changbar=str(Parameters['Na_changbar'][0]))
+    [Parametersout, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=runtime, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'][0], Ca_concCaBasal=str(Parameters['Ca_concCaBasal'][0]), Ca_L_changbar=str(Parameters['Ca_L_changbar'][0]), Ca_N_changbar=str(Parameters['Ca_N_changbar'][0]), Ca_T_changbar=str(Parameters['Ca_T_changbar'][0]), h_changbar=str(Parameters['h_changbar'][0]), K_A_changbar=str(Parameters['K_A_changbar'][0]), K_BK_changbar=str(Parameters['K_BK_changbar'][0]), K_D_changbar=str(Parameters['K_D_changbar'][0]), K_DR_changbar=str(Parameters['K_DR_changbar'][0]), K_M_changbar=str(Parameters['K_M_changbar'][0]), K_SK_changbar=str(Parameters['K_SK_changbar'][0]), Na_changbar=str(Parameters['Na_changbar'][0]))
     print(Parametersout)
 
     for s in sliders_list:
@@ -234,7 +234,7 @@ for s in sliders_list:
 #     global Cavec
 #     global tvec
 #     Injectcurr = eval(text)
-#     [Parametersout, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'][0], Ca_concCaBasal=str(Parameters['Ca_concCaBasal'][0]), Ca_L_changbar=str(Parameters['Ca_L_changbar'][0]), Ca_N_changbar=str(Parameters['Ca_N_changbar'][0]), Ca_T_changbar=str(Parameters['Ca_T_changbar'][0]), h_changbar=str(Parameters['h_changbar'][0]), K_A_changbar=str(Parameters['K_A_changbar'][0]), K_BK_changbar=str(Parameters['K_BK_changbar'][0]), K_D_changbar=str(Parameters['K_D_changbar'][0]), K_DR_changbar=str(Parameters['K_DR_changbar'][0]), K_M_changbar=str(Parameters['K_M_changbar'][0]), K_SK_changbar=str(Parameters['K_SK_changbar'][0]), Na_changbar=str(Parameters['Na_changbar'][0]))
+#     [Parametersout, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=runtime, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'][0], Ca_concCaBasal=str(Parameters['Ca_concCaBasal'][0]), Ca_L_changbar=str(Parameters['Ca_L_changbar'][0]), Ca_N_changbar=str(Parameters['Ca_N_changbar'][0]), Ca_T_changbar=str(Parameters['Ca_T_changbar'][0]), h_changbar=str(Parameters['h_changbar'][0]), K_A_changbar=str(Parameters['K_A_changbar'][0]), K_BK_changbar=str(Parameters['K_BK_changbar'][0]), K_D_changbar=str(Parameters['K_D_changbar'][0]), K_DR_changbar=str(Parameters['K_DR_changbar'][0]), K_M_changbar=str(Parameters['K_M_changbar'][0]), K_SK_changbar=str(Parameters['K_SK_changbar'][0]), Na_changbar=str(Parameters['Na_changbar'][0]))
 #     print(Injectcurr)
 #     l.set_ydata(Vmvec)
 #     fig.canvas.draw_idle()

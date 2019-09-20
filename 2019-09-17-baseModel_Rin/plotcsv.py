@@ -1,12 +1,17 @@
 #exec(open('plotcsv.py').read())
+import matplotlib as mpl
+mpl.rcParams["savefig.directory"] = '/mnt/c/Analkumar2/Study/Biology/Neuroscience/2018 - 23 PhD Thesis/Thesis work'
 
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from neo.io import AxonIO
 import pandas as pd
 
-invidx = 4
+invidx = 1
+Injectcurr = 300e-12
+preStimTime = 0.5
 
 foldername = os.path.basename(os.getcwd())
 Pl = pd.read_csv(f'../../Output/{foldername}/Parametersdf.csv').tail(invidx).iloc[0]
@@ -45,8 +50,9 @@ exp_trace = exp_tracef(Injectcurr=Injectcurr)
 
 
 plt.plot(np.linspace(preStimTime-exp_trace_injstart,preStimTime+exp_sampdur-exp_trace_injstart,exp_samppoints), exp_trace*1e-3, label=flnme)
-plt.plot(ttrace,Vtrace, label='KA as ghk')
-plt.axis([0, 1.2, -0.100, 0.060])
+plt.plot(ttrace,Vtrace, label='Model')
+plt.title('300pA injection')
+plt.axis([0.4, 1.2, -0.100, 0.060])
 plt.legend()
 plt.xlabel('Time (s)')
 plt.ylabel('Membrane potential (mV)')

@@ -16,9 +16,9 @@ import rdesigneur as rd
 import time
 
 foldername=os.path.basename(os.getcwd()) #Folder where parmeter values are stored and saved to
-foldernameT='2019-09-10-ghkKA' #Remove this. This is only to test another folder's parameters. Will still save the parameters to the inteded folder
-# foldernameT=foldername
-invidx = 4 #From bottom, which index to use to get parameter values from the Parametersdf file for initial plotting
+# foldernameT='2019-09-10-ghkKA' #Remove this. This is only to test another folder's parameters. Will still save the parameters to the inteded folder
+foldernameT=foldername
+invidx = 1 #From bottom, which index to use to get parameter values from the Parametersdf file for initial plotting
 #Parameters on sliders: Em, Gl, Ca_concCaBasal,
 
 # Define constants not to be changed
@@ -92,6 +92,7 @@ def exp_tracef(Injectcurr=150e-12):
     Rinp25 = np.abs(np.max(np.array(reader.read_block().segments[5].analogsignals[0]).flatten())*1e-3 - Vrest)/25e-12
     Rinn25 = np.abs(np.min(np.array(reader.read_block().segments[3].analogsignals[0]).flatten())*1e-3 - Vrest)/25e-12
     Gin = 2/(Rinp25+Rinn25)
+    print(Gin)
 
     t = np.linspace(0,exp_sampdur, int(exp_sampdur*exp_samprate))
     Vtracep25 = np.array(reader.read_block().segments[5].analogsignals[0]).flatten()*1e-3
@@ -105,6 +106,7 @@ def exp_tracef(Injectcurr=150e-12):
     tau = (t[(np.abs(Vtracep25_choppped-vp63)).argmin()] - exp_trace_injstart + t[(np.abs(Vtracen25_choppped-vn63)).argmin()] - exp_trace_injstart)/2
     tauinv = (t[len(Vtracep25_choppped)-(np.abs(Vtracep25_choppped[stp_ind::-1]-vp63)).argmin()] - exp_trace_injstart + t[len(Vtracep25_choppped)-(np.abs(Vtracep25_choppped[::-1]-vp63)).argmin()] - exp_trace_injstart)/2
     Cm = (tau+tauinv)*Gin/2
+    print(Cm)
     sm_len = np.sqrt(Cm/CM/np.pi)
     sm_diam = sm_len
 
@@ -363,7 +365,7 @@ def curr(text):
     global Cavec
     global tvec
     Injectcurr = eval(text)
-    [Parameters, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'], Ca_concCaBasal=str(Parameters['Ca_concCaBasal']), Ca_L_changbar=str(Parameters['Ca_L_changbar']), Ca_N_changbar=str(Parameters['Ca_N_changbar']), Ca_T_changbar=str(Parameters['Ca_T_changbar']), h_changbar=str(Parameters['h_changbar']), K_A_changbar=str(Parameters['K_A_changbar']), K_BK_changbar=str(Parameters['K_BK_changbar']), K_D_changbar=str(Parameters['K_D_changbar']), K_DR_changbar=str(Parameters['K_DR_changbar']), K_M_changbar=str(Parameters['K_M_changbar']), K_SK_changbar=str(Parameters['K_SK_changbar']), Na_changbar=str(Parameters['Na_changbar']))
+    [Parameters, characteristics, Vmvec, Ivec, Cavec, tvec] = Modelfunc(runfor=runtime, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'], Ca_concCaBasal=str(Parameters['Ca_concCaBasal']), Ca_L_changbar=str(Parameters['Ca_L_changbar']), Ca_N_changbar=str(Parameters['Ca_N_changbar']), Ca_T_changbar=str(Parameters['Ca_T_changbar']), h_changbar=str(Parameters['h_changbar']), K_A_changbar=str(Parameters['K_A_changbar']), K_BK_changbar=str(Parameters['K_BK_changbar']), K_D_changbar=str(Parameters['K_D_changbar']), K_DR_changbar=str(Parameters['K_DR_changbar']), K_M_changbar=str(Parameters['K_M_changbar']), K_SK_changbar=str(Parameters['K_SK_changbar']), Na_changbar=str(Parameters['Na_changbar']))
     exp_trace = exp_tracef(Injectcurr=Injectcurr)
     print(Injectcurr)
     l.set_ydata(Vmvec)
