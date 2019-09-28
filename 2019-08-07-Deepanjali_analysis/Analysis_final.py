@@ -12,7 +12,7 @@ import pandas as pd
 from allensdk.ephys.ephys_extractor import EphysSweepFeatureExtractor
 
 # //////////////////////////////////////////////////////////////////
-foldername = 'Deepanjali data/WT step input cells' #Name of the folder where files are stored
+foldername = '../../Raw_data/Deepanjali_data/WT step input cells' #Name of the folder where files are stored
 fskip = ['Cell 2 of 21_3_2017.abf'] #List of files that need to be skipped
 seg_nol = [10,16] #list of segment numbers to evaluate the features for. Note that 0 refers to -100pA injection. 10 to 150pA, 16 to 300pA, 20 to 400pA.
 # //////////////////////////////////////////////////////////////////
@@ -23,6 +23,7 @@ def singlefeature(seg_nol,reader,filename,stim_start,stim_end):
     Outputs a pandas dataframe with all the features'''
     features = {}
     for seg_no in seg_nol:
+        # sweep_ext.spike_feature_keys()
         Vtrace = reader.read_block().segments[seg_no].analogsignals[0]
         #Extra
         features['Cell name'] = filename
@@ -153,7 +154,7 @@ for filename in os.listdir(foldername):
         continue
 
     if filename[-4:] == '.abf':
-        reader  = AxonIO(filename='Deepanjali data/WT step input cells/'+filename)
+        reader  = AxonIO(filename='../../Raw_data/Deepanjali_data/WT step input cells/'+filename)
     else:
         continue
 
