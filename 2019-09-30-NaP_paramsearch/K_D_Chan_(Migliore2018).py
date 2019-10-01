@@ -1,4 +1,4 @@
-# KDR channel taken from mod files of Migliore2018: kdrca1.mod
+# KD channel taken from mod files of Migliore2018: kdb.mod
 # Problems:
 
 import numpy as np
@@ -23,42 +23,42 @@ Vdivs = 3000
 # dV = (Vmax-Vmin)/Vdivs
 # v = np.arange(Vmin,Vmax, dV)
 v = np.linspace(Vmin,Vmax, Vdivs)
-Camin = 0.04e-3
-Camax = 1
-Cadivs = 8000
+Camin = 1e-12
+Camax = 3
+Cadivs = 4000
 # dCa = (Camax-Camin)/Cadivs
 # ca = np.arange(Camin,Camax, dCa)
 ca = np.linspace(Camin,Camax, Cadivs)
 
-def K_DR_Chan(name):
-    K_DR = moose.HHChannel( '/library/' + name )
-    K_DR.Ek = EK
-    K_DR.Gbar = 300.0*SOMA_A
-    K_DR.Gk = 0.0
-    K_DR.Xpower = 1.0
-    K_DR.Ypower = 0.0
-    K_DR.Zpower = 0
+def K_D_Chan(name):
+    K_D = moose.HHChannel( '/library/' + name )
+    K_D.Ek = EK
+    K_D.Gbar = 300.0*SOMA_A
+    K_D.Gk = 0.0
+    K_D.Xpower = 1.0
+    K_D.Ypower = 0.0
+    K_D.Zpower = 0
 
-    vhalfn=13
-    a0n=0.02
-    zetan=-3
+    vhalfn=-33
+    a0n=0.005
+    zetan=3
     gmn=0.7
     nmax=2
     q10=1
-    gkdrbar=.003e4
+    sh = 0
+    gkdbar=.01e4
 
     qt=q10**((celsius-24)/10)
-    a = np.exp(1.e-3*zetan*(v*1e3-vhalfn)*9.648e4/(8.315*(273.16+celsius)))
+    a = np.exp(1.e-3*zetan*(v*1e3-vhalfn-sh)*9.648e4/(8.315*(273.16+celsius)))
     ninf = 1/(1+a)
-    taun = np.exp(1.e-3*zetan*gmn*(v*1e3-vhalfn)*9.648e4/(8.315*(273.16+celsius)))/(qt*a0n*(1+a))
+    taun = np.exp(1.e-3*zetan*gmn*(v*1e3-vhalfn-sh)*9.648e4/(8.315*(273.16+celsius)))/(qt*a0n*(1+a))
     taun[taun<nmax] = nmax/qt
-    # taun[]=taun/2
 
-    xgate = moose.element( K_DR.path + '/gateX' )
+    xgate = moose.element( K_D.path + '/gateX' )
     xgate.min = Vmin
     xgate.max = Vmax
     xgate.divs = Vdivs
     xgate.tableA = ninf/taun*1e3
     xgate.tableB = 1.0/taun*1e3
 
-    return K_DR
+    return K_D

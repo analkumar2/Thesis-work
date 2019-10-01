@@ -21,7 +21,7 @@ Parameters['K_DR_changbar'] = 4.477080862
 Parameters['K_M_changbar'] = 0.02933468
 Parameters['K_SK_changbar'] = 0.025938828
 Parameters['Na_changbar'] = 51.0502324
-Parameters['Na_P_changbar'] = 0.510502324
+Parameters['Na_P_changbar'] = 0.510502324e-1
 
 def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters['RM'], Ca_concCaBasal=str(Parameters['Ca_concCaBasal']), Ca_conctau=str(Parameters['Ca_conctau']), Ca_L_changbar=str(Parameters['Ca_L_changbar']), Ca_N_changbar=str(Parameters['Ca_N_changbar']), Ca_T_changbar=str(Parameters['Ca_T_changbar']), h_changbar=str(Parameters['h_changbar']), K_A_changbar=str(Parameters['K_A_changbar']), K_BK_changbar=str(Parameters['K_BK_changbar']), K_D_changbar=str(Parameters['K_D_changbar']), K_DR_changbar=str(Parameters['K_DR_changbar']), K_M_changbar=str(Parameters['K_M_changbar']), K_SK_changbar=str(Parameters['K_SK_changbar']), Na_changbar=str(Parameters['Na_changbar']), Na_P_changbar=str(Parameters['Na_P_changbar'])):
     sys.stdout = open(os.devnull, 'w') #Supresses any output on terminal
@@ -242,9 +242,6 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
             ['soma', '1', 'Ca_conc', 'Ca', 'soma calcium conc MOOSE'],
             # ['soma', '1', 'K_M_chan', 'Ik', 'Channel current MOOSE'],
             # ['soma', '1', 'Na_chan', 'Gk', 'Channel conductance MOOSE'],
-            # ['soma', '1', 'Na_chan', 'Gk', 'Channel conductance MOOSE'],
-            # ['soma', '1', 'K_DR_chan', 'Gk', 'K_DR conductance MOOSE'],
-            # ['soma', '1', 'K_DR_chan', 'Ik', 'K_DR current MOOSE'],
         ],
     )
     rdes.buildModel()
@@ -332,5 +329,4 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
         tvec=plott.vector
 
     sys.stdout = sys.__stdout__
-    # rdes.display()
     return [Parametersout, characteristics, Vmvec, Ivec, Cavec, tvec]

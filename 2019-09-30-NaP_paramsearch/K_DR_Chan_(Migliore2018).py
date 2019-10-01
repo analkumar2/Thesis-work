@@ -52,7 +52,7 @@ def K_DR_Chan(name):
     ninf = 1/(1+a)
     taun = np.exp(1.e-3*zetan*gmn*(v*1e3-vhalfn)*9.648e4/(8.315*(273.16+celsius)))/(qt*a0n*(1+a))
     taun[taun<nmax] = nmax/qt
-    # taun[]=taun/2
+    taun=taun*2
 
     xgate = moose.element( K_DR.path + '/gateX' )
     xgate.min = Vmin
