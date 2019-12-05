@@ -24,6 +24,7 @@ invidx = 3 #From bottom, which index to use to get parameter values from the Par
 # Define constants not to be changed
 F = 96485.3329
 elecPlotDt = 0.00005
+elecDt = 0.00005
 
 # Define model parameters
 sm_diam=60e-6; sm_len=60e-6 #To be set so that Cm is as needed when CM=0.01

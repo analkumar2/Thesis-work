@@ -45,6 +45,7 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
 
     #Initial model run to calculate RM and Gbars so that input resistance and Vrest are as needed.
     rdes = rd.rdesigneur(
+        elecDt = elecDt,
         elecPlotDt = elecPlotDt,
         cellProto = [
             ['somaProto', 'soma', sm_diam, sm_len],
@@ -99,9 +100,9 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
 
     #Changing vclamp parameters
     try:
-        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).ti = elecPlotDt
+        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecDt
+        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecDt
+        moose.element( '/model/elec/soma/vclamp' ).ti = elecDt
         moose.element( '/model/elec/soma/vclamp' ).td = 0
     except:
         pass
@@ -196,6 +197,7 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
     #Actual model run
     moose.delete('/model')
     rdes = rd.rdesigneur(
+        elecDt = elecDt,
         elecPlotDt = elecPlotDt,
         cellProto = [
             ['somaProto', 'soma', sm_diam, sm_len],
@@ -251,9 +253,9 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
     moose.connect(plott, 'requestOut', clk, 'getCurrentTime')
 
     try:
-        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).ti = elecPlotDt
+        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecDt
+        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecDt
+        moose.element( '/model/elec/soma/vclamp' ).ti = elecDt
         moose.element( '/model/elec/soma/vclamp' ).td = 0
     except:
         pass

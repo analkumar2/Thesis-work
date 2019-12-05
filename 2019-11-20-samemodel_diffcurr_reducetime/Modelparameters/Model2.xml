@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Model>
+	<notes>Proper passive properties. No APD. No offset. No Ca_R</notes>
+
+	<segment id='0' name='soma'>
+		<Morphology sm_diam='6.73077545020806E-05' sm_len='6.73077545020806E-05'/>
+		<Passive CM='0.01' RM='3.31582868264106' Em='-0.070'/>
+		<Channels>
+			<Na_Chan Gbar='70.4415997320685' kinetics="Kinetics/Na_Chan_(Migliore2018).py"/>
+			<Na_P_Chan Gbar='0.0699' kinetics="Kinetics/Na_P_Chan_(Migliore2018).py"/>
+			<K_DR_Chan Gbar='70.23419872051622' kinetics="Kinetics/K_DR_Chan_(Migliore2018).py"/>
+			<K_D_Chan Gbar='0.02' kinetics="Kinetics/K_D_Chan_(Migliore2018).py"/>
+			<K_A_Chan Gbar='80.35938559' kinetics="Kinetics/K_A_Chan_(Migliore2018)_ghk.py"/>
+			<K_M_Chan Gbar='0.2' kinetics="Kinetics/K_M_Chan_(Migliore2018).py"/>
+			<K_SK_Chan Gbar='0.0025938828' kinetics="Kinetics/K_SK_Chan_(Migliore2018).py"/>
+			<K_BK_Chan Gbar='0.016112104730357513' kinetics="Kinetics/K_BK_Chan_(Migliore2018).py"/>
+			<h_Chan Gbar='0.2' kinetics="Kinetics/h_Chan_(Migliore2018).py"/>
+			<Ca_T_Chan Gbar='2.910963364' kinetics="Kinetics/Ca_T_Chan_(Migliore2018).py"/>
+			<Ca_L_Chan Gbar='5.10090127259027' kinetics="Kinetics/Ca_L_Chan_(Migliore2018).py"/>
+			<Ca_N_Chan Gbar='0.5533811207' kinetics="Kinetics/Ca_N_Chan_(Migliore2018).py"/>
+		</Channels>
+		<Ca_Conc Ca_B='1820533321.61359' Ca_tau='0.1' Ca_inf='0.05e-3' kinetics="Kinetics/Ca_Conc_(Common).py"/>
+	</segment>
+
+</Model>
+

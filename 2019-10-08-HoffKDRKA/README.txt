@@ -1,0 +1,1 @@
+Idea was to see if the kinetics given in Dax Hoffmann 1997 can give proper model. Unfortunately, the tau was not given in the paper.

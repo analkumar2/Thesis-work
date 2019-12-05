@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Model>
+	<notes>Testing xml</notes>
+
+	<segment id='0' name='soma'>
+		<Morphology sm_diam='60e-6' sm_len='60e-6'/>
+		<Passive CM='0.01' RM='1' Em='-0.070'/>
+		<Channels>
+			<Na_Chan Gbar='300' kinetics="Kinetics/Na_Chan_(Migliore2018).py"/>
+			<K_DR_Chan Gbar='50' kinetics="Kinetics/K_DR_Chan_(Migliore2018).py"/>
+		</Channels>
+		<Ca_Conc Ca_B='1e7' Ca_tau='0.2' Ca_inf='0.05e-3' kinetics="Kinetics/Ca_Conc_(Common).py"/>
+	</segment>
+
+</Model>
+

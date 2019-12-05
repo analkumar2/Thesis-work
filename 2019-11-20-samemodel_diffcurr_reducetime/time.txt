@@ -1,0 +1,41 @@
+import moose
+import time
+import rdesigneur as rd
+exec(open('MOOSEModel.py').read())
+moose.delete('/model')
+tt = time.time()
+rdes = rd.rdesigneur(
+    chanProto = [['make_HH_Na()', 'Na'], ['make_HH_K()', 'K']],
+    chanDistrib = [
+        ['Na', 'soma', 'Gbar', '1200' ],
+        ['K', 'soma', 'Gbar', '360' ]],
+    stimList = [['soma', '1', '.', 'inject', '(t>0.1 && t<0.2) * 10e-8' ]],
+    plotList = [['soma', '1', '.', 'Vm', 'Membrane potential']]
+)
+
+rdes.buildModel()
+moose.reinit()
+moose.start( 0.3 )
+ttf = time.time()
+print(ttf - tt)
+
+
+tt = time.time()
+moose.element('/model/stims/stim0').expr = '(t>=0.5 && t<=1.0) ? 10e-10 : 0'
+moose.reinit()
+moose.start( 0.3 )
+ttf = time.time()
+print(ttf - tt)
+
+
+tt = time.time()
+generateModel('Modelparameters/Model2.xml', 50e-12)
+ttf = time.time()
+print(ttf - tt)
+
+tt = time.time()
+moose.element('/model/stims/stim0').expr = '(t>=0.5 && t<=1.0) ? 50e-12 : 0'
+moose.reinit()
+moose.start( 2.5 )
+ttf = time.time()
+print(ttf - tt)

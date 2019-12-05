@@ -99,9 +99,9 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
 
     #Changing vclamp parameters
     try:
-        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).ti = elecPlotDt
+        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecDt
+        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecDt
+        moose.element( '/model/elec/soma/vclamp' ).ti = elecDt
         moose.element( '/model/elec/soma/vclamp' ).td = 0
     except:
         pass
@@ -197,6 +197,7 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
     moose.delete('/model')
     rdes = rd.rdesigneur(
         elecPlotDt = elecPlotDt,
+        elecDt = elecDt,
         cellProto = [
             ['somaProto', 'soma', sm_diam, sm_len],
         ],
@@ -240,11 +241,12 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
             ['soma', '1', 'vclamp', 'current', 'Soma holding current MOOSE'],
             ['soma', '1', '.', 'inject', 'Injected current MOOSE'],
             ['soma', '1', 'Ca_conc', 'Ca', 'soma calcium conc MOOSE'],
-            # ['soma', '1', 'K_M_chan', 'Ik', 'Channel current MOOSE'],
-            # ['soma', '1', 'Na_chan', 'Gk', 'Channel conductance MOOSE'],
-            # ['soma', '1', 'Na_chan', 'Gk', 'Channel conductance MOOSE'],
-            # ['soma', '1', 'K_DR_chan', 'Gk', 'K_DR conductance MOOSE'],
-            # ['soma', '1', 'K_DR_chan', 'Ik', 'K_DR current MOOSE'],
+            ['soma', '1', 'K_M_chan', 'Gk', 'K_M Channel conductance MOOSE'],
+            ['soma', '1', 'Na_chan', 'Gk', 'Na Channel conductance MOOSE'],
+            ['soma', '1', 'Na_P_chan', 'Gk', 'Na_P Channel conductance MOOSE'],
+            ['soma', '1', 'K_DR_chan', 'Gk', 'K_DR Channel conductance MOOSE'],
+            ['soma', '1', 'K_D_chan', 'Gk', 'K_D Channel conductance MOOSE'],
+            ['soma', '1', 'h_chan', 'Gk', 'h Channel conductance MOOSE'],
         ],
     )
     rdes.buildModel()
@@ -254,9 +256,9 @@ def Modelfunc(runfor=2, stimul='Iclamp', Injectcurr=Injectcurr, gl=1/Parameters[
     moose.connect(plott, 'requestOut', clk, 'getCurrentTime')
 
     try:
-        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecPlotDt
-        moose.element( '/model/elec/soma/vclamp' ).ti = elecPlotDt
+        moose.element( '/model/elec/soma/vclamp' ).gain = CM*sm_area/elecDt
+        moose.element( '/model/elec/soma/vclamp' ).tau = 5*elecDt
+        moose.element( '/model/elec/soma/vclamp' ).ti = elecDt
         moose.element( '/model/elec/soma/vclamp' ).td = 0
     except:
         pass

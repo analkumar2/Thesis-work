@@ -1,0 +1,1 @@
+Uses brute_curvefit to fit channel kinetics taken from channelpedia

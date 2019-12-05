@@ -1,0 +1,1 @@
+parses the nwb file from channelpedia and plots

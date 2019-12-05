@@ -1,0 +1,4 @@
+numpy
+h5py
+matplotlib
+https://github.com/NeurodataWithoutBorders/api-python/archive/master.zip#egg=nwb

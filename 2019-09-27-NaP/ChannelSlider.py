@@ -18,12 +18,13 @@ import time
 foldername=os.path.basename(os.getcwd()) #Folder where parmeter values are stored and saved to
 # foldernameT='2019-09-17-baseModel_Rin' #Remove this. This is only to test another folder's parameters. Will still save the parameters to the inteded folder
 foldernameT=foldername
-invidx = 3 #From bottom, which index to use to get parameter values from the Parametersdf file for initial plotting
+invidx = 1 #From bottom, which index to use to get parameter values from the Parametersdf file for initial plotting
 #Parameters on sliders: Em, Gl, Ca_concCaBasal,
 
 # Define constants not to be changed
 F = 96485.3329
 elecPlotDt = 0.00005
+elecDt = 0.00005
 
 # Define model parameters
 sm_diam=60e-6; sm_len=60e-6 #To be set so that Cm is as needed when CM=0.01

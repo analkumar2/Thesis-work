@@ -1,0 +1,1 @@
+Parses a channelpedia webpage to extract cell IDs. Then make a list of links that can be downloaded by a browser extension.
