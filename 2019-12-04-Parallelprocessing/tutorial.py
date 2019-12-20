@@ -82,13 +82,13 @@ for i, row in enumerate(data):
     pool.apply_async(howmany_within_range2, args=(i, row, 4, 8), callback=collect_result)
 
 # Step 4: Close Pool and let all the processes complete
-pool.close()
-pool.join()  # postpones the execution of next line of code until all processes in the queue are done.
+# pool.close()
+# pool.join()  # postpones the execution of next line of code until all processes in the queue are done.
 
 # Step 5: Sort results [OPTIONAL]
-results.sort(key=lambda x: x[0])
-results_final = [r for i, r in results]
+# results.sort(key=lambda x: x[0])
+# results_final = [r for i, r in results]
 print(time.time()-ttt)
 
-print(results_final[:10])
+# print(results_final[:10])
 #> [3, 1, 4, 4, 4, 2, 1, 1, 3, 3]

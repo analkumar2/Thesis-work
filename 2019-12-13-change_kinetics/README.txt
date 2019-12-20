@@ -1,0 +1,1 @@
+Model38 of 4179468691 had a little offset. Here, I try to change the kinetics a little bit to see if this has any effect on the proper firing.
