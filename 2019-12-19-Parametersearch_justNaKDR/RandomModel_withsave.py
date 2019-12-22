@@ -261,6 +261,7 @@ for i in range(num_of_iterations):
         Model['parameters']['Channels'][chan.name]['Kinetics'] = [i for i in np.ravel(rdes.chanProtoList) if chan.name+'()' in i][0][::-1].partition('.')[2][::-1]
         Model['parameters']['Channels'][chan.name]['Erev'] = moose.element(f"/model/elec/soma/{chan.name}").Ek
     try:
+        temppoo = moose.element("/model/elec/soma/Ca_conc").B
         Model['parameters']['Ca_Conc'] = {}
     except:
         pass
@@ -299,13 +300,13 @@ for i in range(num_of_iterations):
         print('\n')
         f.write("Models['Model" + str(mnum) +"'] = " + str(Model) + "\n\n")
         mnum = mnum+1
-        plt.plot(tvec25pA, Vmvec25pA, label='Model25pA')
-        plt.plot(expData['25pA'][0], expData['25pA'][1], label='Exp25pA')
-        plt.plot(tvec50pA, Vmvec50pA, label='Model50pA')
-        plt.plot(expData['50pA'][0], expData['50pA'][1], label='Exp50pA')
-        plt.plot(tvec150pA, Vmvec150pA, label='Model150pA')
-        plt.plot(expData['150pA'][0], expData['150pA'][1], label='Exp150pA')
-        plt.legend()
-        plt.show()
+        # plt.plot(tvec25pA, Vmvec25pA, label='Model25pA')
+        # plt.plot(expData['25pA'][0], expData['25pA'][1], label='Exp25pA')
+        # plt.plot(tvec50pA, Vmvec50pA, label='Model50pA')
+        # plt.plot(expData['50pA'][0], expData['50pA'][1], label='Exp50pA')
+        # plt.plot(tvec150pA, Vmvec150pA, label='Model150pA')
+        # plt.plot(expData['150pA'][0], expData['150pA'][1], label='Exp150pA')
+        # plt.legend()
+        # plt.show()
 
 f.close()

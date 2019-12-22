@@ -2,7 +2,7 @@ Parameter search with all Migliore kinetics
 Error function is sum of 25, 50 and 150pA injection protocols - sum of squares
 
 The free parameters here:
-Cm, Rm, Em, Gbars (=gbars*sm_area), Ca_B, Ca_tau, Ca_inf, ENa, EK, ECa, Kinetics of Na, KDR
+Cm, Rm, Em, ENa, EK, Kinetics of Na, KDR, Gbars of Na, KDR
 # The reason Gbar instead of gbars is use dis because then we have to calculate sm_len and sm_diam as CM=0.01
 
 The fixed parameters which should be free and will be explored later:
