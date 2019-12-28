@@ -14,10 +14,11 @@ import plotexp
 
 # //////////////////////////////////////////////////////////////////
 foldername = '../../Raw_data/Deepanjali_data/WT step input cells' #Name of the folder where files are stored
-fskip = ['Cell 2 of 21_3_2017.abf'] #List of files that need to be skipped
+fskip = ['Cell 2 of 21_3_2017.abf', 'Cell 1 of 15118.abf', 'cell 4 of 111016.abf'] #List of files that need to be skipped
 # //////////////////////////////////////////////////////////////////
 mostdiffpair, error = [[0,0],0]
 errors = []
+avg25 = []
 
 numfiles = len(os.listdir(foldername))
 for i in np.arange(numfiles):
@@ -85,7 +86,7 @@ for i in np.arange(numfiles):
         error25pA = np.sum((curr_expData['25pA'][1]-next_expData['25pA'][1])**2)
         error50pA = np.sum((curr_expData['50pA'][1]-next_expData['50pA'][1])**2)
         error150pA = np.sum((curr_expData['150pA'][1]-next_expData['150pA'][1])**2)
-        currerror = error25pA+error50pA+error150pA
+        currerror = error25pA
         print(i,',',k, '-->', currerror)
         errors.append(currerror)
         if  currerror > error:

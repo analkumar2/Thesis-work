@@ -1,0 +1,1 @@
+time for i in seq 2; do python3 wrapper_RandomModel_withsave.py; done
