@@ -1,0 +1,140 @@
+3849699707
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+1
+3218390256
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+2
+3651252432
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+3
+1663736783
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+4
+738309325
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+5
+930838777
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+6
+196691083
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+7
+2542607640
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+8
+1317491458
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+9
+3559091712
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+10
+2480230477
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+11
+1746524953
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+12
+2109823745
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+13
+984820702
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+14
+954574838
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+15
+3522579495
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+16
+2787011311
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+17
+641768198
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+18
+4032446096
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+19
+2227025578
+iternum = 0
+iternum = 1
+iternum = 2
+iternum = 3
+iternum = 4
+20

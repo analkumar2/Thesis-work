@@ -78,9 +78,15 @@ def wr_ChanGate(v,vhalf_inf, slope_inf, A, B, C, D, E, F):
 
 
 params, error = bf.brute_scifit(wr_ChanGate, v, Mig2018htau, restrict=[[-0.1,-0.1, -0.1,0,0,0,0,0],[0.1,0.1, 0.1,0.1,0.1,0.1,0.1,1]], maxfev=1000, ntol=10000, returnnfactor=0.002)
+print(params)
+
+# pp, ee = bf.scipy_fit(wr_ChanGate, v, Mig2018htau, restrict=[[-0.1,-0.1, -0.1,0,0,0,0,0],[0.1,0.1, 0.1,0.1,0.1,0.1,0.1,1]], p0list=[[0.050,-0.004,-0.0456,0.0043,0.0120,0.0262,0.0085,0.039],], maxfev = 1000)
+# print(pp)
 
 plt.plot(v, Mig2018htau, label='ori')
 plt.plot(v, wr_ChanGate(v, *params), label='fitted')
+# plt.plot(v, wr_ChanGate(v, *pp), label='fitted2')
+# plt.plot(v, wr_ChanGate(v,-0.050,-0.004,-0.0456,0.0043,0.0120,0.0262,0.0085,0.039), label='actual')
 plt.legend()
 plt.show()
 

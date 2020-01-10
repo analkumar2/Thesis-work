@@ -1,0 +1,1 @@
+Random parameter search with All Gbars. Na and KDR kinetics fixed to the modified parameters

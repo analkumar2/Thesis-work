@@ -1,0 +1,1 @@
+Tries to plot offset vs the NaKDR kinetics parameters
