@@ -1,0 +1,306 @@
+load_file("../bpap-dendburst.hoc")
+load_file("../bpap-somainj.hoc")
+load_file("TreePlot.hoc")
+load_file("ChannelBlocker.hoc")
+load_file("VarList.hoc")
+load_file("../impedance.hoc")
+load_file("../epspsizes.hoc")
+
+//
+// Parameters
+//
+
+objref parlist                               // Parameter List
+
+proc set_pars() {
+    parlist = new VarList()
+    
+    // Simulation parameters 
+    parlist.appendSetDouble("tstop", 100)
+    parlist.appendSetDouble("tinc", 100)
+    parlist.appendSetDouble("Dt", 0.2)         // Time step for recording membrane potentials
+    parlist.appendSetDouble("nruns", 1)     
+    
+    // Neuron parameters
+    parlist.appendSetString("cell_model", "ca1_poirazi")
+    parlist.appendSetDouble("diam_thresh", 1.5) // What counts as a thin branch
+    
+    // Somatic current injection stimuli
+    parlist.appendSetDouble("soma_iclamp_amp", 3)
+    parlist.appendSetDouble("soma_iclamp_del", 50)
+    parlist.appendSetDouble("soma_iclamp_dur", 1, "stim.amp = soma_iclamp_state*soma_iclamp_amp")
+    parlist.appendSetDouble("soma_iclamp_state", 0, "stim.amp = soma_iclamp_state*soma_iclamp_amp")     
+    
+    // Synapse parameters
+    parlist.appendSetDouble("nsyn",   200)
+    parlist.appendSetDouble("thickproxfrac",  0.000 )
+    parlist.appendSetDouble("thickmedfrac",   0.016)
+    parlist.appendSetDouble("thickdistfrac",   0.129)
+    parlist.appendSetDouble("thinfrac",   0.855)
+    
+    // Synaptic Stimuli parameters
+    parlist.appendSetDouble("noise", 0)
+    parlist.appendSetDouble("start", 50)
+    parlist.appendSetDouble("jitter", 20)
+    parlist.appendSetDouble("interval", 100)
+    parlist.appendSetDouble("number", tstop/ interval * 100 )
+    
+    // Spines 
+    parlist.appendSetDouble("spines",1)
+    parlist.appendSetDouble("tauca",12)
+    // 10 R-type ca channels with conductance 16pS; divide by area of spine.
+    parlist.appendSetDouble("gmax_car_spine",10*16e-12/(PI*0.2*1.0*1e-8),"set_all_synapse_pars()")
+    
+    // Synpse paramters
+    // AMPA -- no prefix for backwards compatibility
+    parlist.appendSetDouble("tau1", 0.2)
+    parlist.appendSetDouble("tau2", 5)
+    parlist.appendSetDouble("e", 0)
+    // 0.000022 below thresh; 0.000023 above with cvode and atol=0.001
+    // And with 0.25ms fixed time step
+    parlist.appendSetDouble("gsbar", 0.2E-3, "set_all_synapse_pars()")
+    parlist.appendSetDouble("nmda_normfac", 0.9162) // uS
+    
+    // NMDA
+    parlist.appendSetDouble("nmda_taurise", 1.7)
+    parlist.appendSetDouble("nmda_taufast", 67)
+    parlist.appendSetDouble("nmda_tauslow", 428)
+    parlist.appendSetDouble("nmda_e", 0)
+    parlist.appendSetDouble("nmda_gsbar", 0.1E-3, "set_all_synapse_pars()")
+    parlist.appendSetDouble("dendburst_state", 1, "set_all_synapse_pars()")
+    parlist.appendSetDouble("ka_blocked_state", 0, "kapblocker.block(ka_blocked_state) kadblocker.block(ka_blocked_state) ") // uS
+    parlist.appendSetDouble("taulmin_ka",lmin_kad, "lmin_kad=taulmin_ka lmin_kap=taulmin_ka") // uS
+    
+    outfile.aopen()
+    parlist.fprint(outfile)
+    outfile.close()
+}
+set_pars()
+
+
+//
+// Cell model
+// 
+
+// Need to set these here to speed up computation that occurs 
+// while loading the model
+cvode_active(1)
+cvode.atol(0.001)
+load_cell_model(cell_model)    
+
+// Poirazi-specific stuff for setting up geometry
+apical_dendrite[4]  base = new SegmentRef(0)
+apical_dendrite[92] apex = new SegmentRef(0.5)
+ra_adjustment = adjustment
+
+cell_statistics()
+setup_synapses()
+
+//
+// Experimental setup 
+// 
+
+// Soma iclamp
+setup_soma_iclamp()
+stim.amp = soma_iclamp_state*soma_iclamp_amp
+
+// Record the synapse and soma voltages
+record_vsyn()
+record_vsoma()
+record_caiconc()
+
+// Channel blockers
+objref kapblocker, kadblocker
+kapblocker = new ChannelBlocker("gkabar_kap",sl)
+kadblocker = new ChannelBlocker("gkabar_kad",sl)
+
+//
+// User interface
+// 
+
+load_file("bpap-interactive.ses")
+
+// The main panel
+xpanel("Control panel") 
+xlabel("Parameters")
+parlist.xstatebutton("Dendburst","dendburst_state")
+parlist.xvalue("AMPA gbar (uS)","gsbar")
+parlist.xvalue("NMDA gbar (uS)","nmda_gsbar")
+parlist.xvalue("gmax_car_spine (mA/cm2)","gmax_car_spine")
+parlist.xstatebutton("Current clamp","soma_iclamp_state")
+parlist.xvalue("amp (nA)","soma_iclamp_amp")
+parlist.xstatebutton("Block KA channels","ka_blocked_state")
+parlist.xvalue("Min KA inactivation tau","taulmin_ka")
+xlabel("Run")
+xbutton("BPAP Run ","bpaprun()")
+xbutton("Find EPSP amplitudes","epsprun()")
+xlabel("File")
+xbutton("Save Parameters","parlist.save(\"\",\"pars\")")
+xbutton("Load Parameters","parlist.load(\"\",\"pars\")")
+xbutton("Save Parameters and Data","save_parameters_and_data()")
+xlabel("View Statistic")
+xradiobutton("Peak amplitude", "decks_flip_to(0)")
+xradiobutton("Delays", "decks_flip_to(1)")
+xpanel(0,100)                           // Just below the main menu
+
+// save_parameters_and_data(), referenced in the panel
+strdef dataname, filename
+dataname="bpap-dendburst"
+proc save_parameters_and_data() {
+    string_dialog("Enter name of parameter set",dataname )
+    sprint(filename,"pars/%s",dataname)
+    parlist.save(filename)
+    sprint(filename,"datastore/%s",dataname)
+    outfile=new FormatFile(filename,"R","r")
+    outfile.wopen()
+    parlist.fprint(outfile)
+    datalist.fprint(outfile)
+    outfile.close()
+}
+
+// Decks to put the plots in
+objref vsyn_dist_deck,  vsyn_size_deck
+objref casyn_dist_deck, casyn_size_deck
+
+// Plots for the  features of vsyn versus distance
+objref vsynmax_dist_tp, vsyndel_dist_tp
+vsyn_dist_deck = new Deck()
+vsyn_dist_deck.intercept(1)
+vsynmax_dist_tp = new TreePlot()
+vsynmax_dist_tp.size(0, 1300, -70, 30)
+vsyn_dist_deck.intercept(0)
+vsyn_dist_deck.intercept(1)
+vsyndel_dist_tp = new TreePlot()
+vsyndel_dist_tp.size(0, 1300, 10, 20)
+vsyn_dist_deck.intercept(0)
+vsyn_dist_deck.map("Vsyn feature vs distance", 375, 0  , 250, 200)
+vsyn_dist_deck.flip_to(0)
+
+// Plots for the  features of vsyn versus size
+objref vsynmax_size_tp, vsyndel_size_tp 
+vsyn_size_deck = new Deck()
+vsyn_size_deck.intercept(1)
+vsynmax_size_tp = new TreePlot()
+vsynmax_size_tp.size(50, 100, -70, 30)
+vsyn_size_deck.intercept(0)
+vsyn_size_deck.intercept(1)
+vsyndel_size_tp = new TreePlot()
+vsyndel_size_tp.size(50, 100, 10, 20)
+vsyn_size_deck.intercept(0)
+vsyn_size_deck.map("Vsyn feature vs size", 650, 0  , 250, 200)
+vsyn_size_deck.flip_to(0)
+
+// Plots for the  features of casyn versus distance
+objref casynmax_dist_tp, casyndel_dist_tp 
+casyn_dist_deck = new Deck()
+casyn_dist_deck.intercept(1)
+casynmax_dist_tp = new TreePlot()
+casynmax_dist_tp.size(0, 1300, 0, 0.02)
+casynmax_dist_tp.lines(0)
+casynmax_dist_tp.marks(1)
+casyn_dist_deck.intercept(0)
+casyn_dist_deck.intercept(1)
+casyndel_dist_tp = new TreePlot()
+casyndel_dist_tp.size(0, 1300, 10, 20)
+casyndel_dist_tp.lines(0)
+casyndel_dist_tp.marks(1)
+casyn_dist_deck.intercept(0)
+casyn_dist_deck.map("Casyn feature vs distance", 375, 285 , 250, 200)
+casyn_dist_deck.flip_to(0)
+
+// Plots for the  features of casyn versus size
+objref casynmax_size_tp, casyndel_size_tp 
+casyn_size_deck = new Deck()
+casyn_size_deck.intercept(1)
+casynmax_size_tp = new TreePlot()
+casynmax_size_tp.size(50, 100, 0, 0.02)
+casynmax_size_tp.lines(0)
+casynmax_size_tp.marks(1)
+casyn_size_deck.intercept(0)
+casyn_size_deck.intercept(1)
+casyndel_size_tp = new TreePlot()
+casyndel_size_tp.size(50, 100, 10, 20)
+casyndel_size_tp.lines(0)
+casyndel_size_tp.marks(1)
+
+casyn_size_deck.intercept(0)
+casyn_size_deck.map("Casyn feature vs size", 650, 285  , 250, 200)
+casyn_size_deck.flip_to(0)
+
+// Function and panel to help flip the decks
+proc decks_flip_to () { 
+    vsyn_dist_deck.flip_to($1)
+    vsyn_size_deck.flip_to($1)
+    casyn_dist_deck.flip_to($1)
+    casyn_size_deck.flip_to($1)
+}
+
+// Plots for the Soma EPSP amplidtude and transfer impedance
+objref epsp_soma_amp_tp, transimp_tp
+epsp_soma_amp_tp = new TreePlot(0)
+epsp_soma_amp_tp.view(0, 0, 1300, 1,   375, 543, 250,150)
+transimp_tp = new TreePlot(0)
+transimp_tp.view(    0, 0, 1300, 100, 375, 750, 250,150)
+
+// Plots for the Synapse EPSP amplidtude and transfer impedance
+objref epsp_syn_amp_tp, inputimp_tp
+epsp_syn_amp_tp = new TreePlot(0)
+epsp_syn_amp_tp.view(0, 0, 1300, 1,   650, 543, 250,150)
+inputimp_tp = new TreePlot(0)
+inputimp_tp.view(    0, 0, 1300, 100, 650, 750, 250,150)
+
+
+// 
+//  The procedure to run the simulation -- also redraws graphs
+// 
+
+objref vsynmax, casynmax, vsyndel, casyndel
+datalist.appendVector("vsynmax")
+datalist.appendVector("casynmax")
+datalist.appendVector("vsyndel")
+datalist.appendVector("casyndel")
+proc bpaprun() { local tmax
+    // Impedance
+    measure_impedance()
+    transimp_tp.plot(distances,transimp,parents)
+    inputimp_tp.plot(distances,inputimp,parents)
+    
+    // Run the simulation
+    run()
+    
+    // Analysis
+    vsynmax  = new Vector(vsyn.count())
+    vsyndel  = new Vector(vsyn.count())
+    casynmax = new Vector(caiconc.count())
+    casyndel = new Vector(caiconc.count())
+        
+    //    vsomamax = new Vector(vsoma.count())
+    for i=0, vsyn.count()-1 {
+        vsynmax.x(i) = vsyn.object(i).max()
+        tmax = tsyn.object(i).x(vsyn.object(i).max_ind())
+        vsyndel.x(i) = tmax - start
+    }
+    for i=0, caiconc.count()-1 {
+        casynmax.x(i) = caiconc.object(i).max()
+        tmax = tsyn.object(i).x(caiconc.object(i).max_ind())
+        casyndel.x(i) = tmax - start
+        
+    }
+    // Plot maxima
+    vsynmax_dist_tp.plot(distances,vsynmax,parents)
+    casynmax_dist_tp.plot(distances.ind(scallstimsr),casynmax,parents)
+    vsynmax_size_tp.plot(transimp,vsynmax,parents)
+    casynmax_size_tp.plot(transimp.ind(scallstimsr),casynmax,parents)
+    // Plot delays
+    vsyndel_dist_tp.plot(distances,vsyndel,parents)
+    casyndel_dist_tp.plot(distances.ind(scallstimsr),casyndel,parents)
+    vsyndel_size_tp.plot(transimp,vsyndel,parents)
+    casyndel_size_tp.plot(transimp.ind(scallstimsr),casyndel,parents)
+}
+
+proc epsprun() {
+    measure_epspsizes()
+    epsp_soma_amp_tp.plot(distances, epsp_soma_amp, parents)
+    epsp_syn_amp_tp.plot(distances, epsp_syn_amp, parents)
+}
+

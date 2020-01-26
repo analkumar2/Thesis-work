@@ -1,0 +1,192 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sTreePlot = $Revision: 1.14 $, ",pkgversions)
+
+load_file("RPlot.hoc")
+
+begintemplate TreePlot
+
+public plot, lines, marks, errorbars
+public view, size, family, erase_all
+public getline, line_info, view_info
+public getmarks
+public graph
+
+public rprintfile, rp
+public set_xlab, get_xlab
+public set_ylab, get_ylab
+public view_equal_plot, auto_limits_on, set_limits, get_limit
+
+objref graph, xvec, yvec, diamvec, parentsvec, errorvec
+objref tmpxvec, tmpyvec
+objref xmarklist, ymarklist
+strdef xlab, ylab
+objref rp
+objref this
+
+double manual_limits[4]
+double auto_limits[4]
+double auto_flag[4]
+double limits[4]
+
+proc init() { local i 
+    // Allow not to map, similar to Graph object
+    if (numarg()== 1) {
+        graph = new Graph($1)
+    } else {
+        graph = new Graph()
+    }
+    tmpxvec = new Vector(2)
+    tmpyvec = new Vector(2)
+    xmarklist = new List()
+    ymarklist = new List()
+    colour = 1
+    lines(1)                              // Show lines
+    marks(0)                              // Don't show marks
+    errorbars(1)                          // Show errorbars
+    family_flag = 0                       // Whether to keep lines
+    for i=0,3 { auto_flag[i] = 1 }
+    xlab = ""
+    ylab = ""
+    rp = new RPlot()
+}
+
+proc plot() { local i, s
+    xvec = $o1
+    yvec = $o2
+    parentsvec = $o3
+    if (numarg() >= 4) { errorvec = $o4 }
+    
+    // Clear graph if required
+    if (!family_flag) { 
+        erase_all()
+        colour = 1
+    }
+    
+    // So that crosshair_action works, do invisible line
+    yvec.line(graph,xvec,0,1)
+    if (lines_flag) {
+        for i=0, xvec.size()-1 { 
+            tmpxvec.x(0) = xvec.x(i)
+            tmpxvec.x(1) = xvec.x(parentsvec.x(i))
+            tmpyvec.x(0) = yvec.x(i)
+            tmpyvec.x(1) = yvec.x(parentsvec.x(i))
+            tmpyvec.line(graph,tmpxvec,colour,1)
+        }
+    }
+    if (marks_flag) { 
+        yvec.mark(graph,xvec,"o",6,colour)
+        xmarklist.append(xvec)
+        ymarklist.append(yvec)
+    }
+    if ((numarg() >= 4) && (errorbars_flag == 1)) {
+        for i=0, errorvec.size()-1 {
+            tmpxvec.x(0) = xvec.x(i)
+            tmpxvec.x(1) = xvec.x(i)
+            tmpyvec.x(0) = yvec.x(i)-errorvec.x(i)
+            tmpyvec.x(1) = yvec.x(i)+errorvec.x(i)
+            tmpyvec.line(graph,tmpxvec,colour,1)
+        }
+    }
+    colour += 1
+    if (colour == 10) colour=1
+}
+
+proc erase_all() {
+    graph.erase_all() 
+    s = xmarklist.remove_all()
+    s = ymarklist.remove_all()
+}    
+
+// turn lines on or off
+proc lines() { lines_flag = $1 }
+
+// turn marks on or off
+proc marks() { marks_flag = $1 }
+
+// turn errorbars on or off
+proc errorbars() { errorbars_flag = $1 } 
+
+// mleft, mbottom, mwidth, mheight, wleft, wtop, wwidth, wheight
+proc view() { graph.view($1,$2,$3,$4,$5,$6,$7,$8) }
+
+// Clone of Graph.size()
+proc size() { graph.size($1,$2,$3,$4) }
+
+// Part of functionality of Graph.family()
+proc family() { family_flag = $1 }
+
+// Clone of Graph.getline()
+func getline() { return graph.getline($1,$o2,$o3) }
+
+// Analogue of getline() for marks
+func getmarks() { local i
+    i = $1
+    i += 1
+    if (i <= (xmarklist.count()-1)) {
+        $o2 = xmarklist.object(i).cl
+        $o3 = ymarklist.object(i).cl
+    } else {
+        i = -1
+    }
+    return i 
+}
+
+// Clone of Graph.view_info()
+func view_info() {
+    if (numarg() == 0 ) { return graph.view_info() }
+    if (numarg() == 2 ) { return graph.view_info($1,$2) }
+    return -1
+}
+
+// Clone of Graph.line_info()
+func line_info() {
+    return graph.line_info($1,$o2)
+}
+
+// Set manual limits which will be respected by view_equal_plot() in
+// directions for which auto_limits = 0
+proc set_limits() { local i
+    for i=1,4 { manual_limits[i-1] = $i }
+}
+
+// turn on automatic setting of limit when argument corresponding to
+// argument in size() is 1
+proc auto_limits_on() { local i 
+    for i=1,4 { auto_flag[i-1] = $i }
+}
+
+// Fit graph to plot (apart from manually-set limits)
+proc view_equal_plot() { local i
+    graph.size(&auto_limits)
+    for i=0,3 {
+        if (auto_flag[i]) {
+            limits[i] = auto_limits[i]
+        } else {
+            limits[i] = manual_limits[i]
+        }
+    }
+    size(limits[0], limits[1], limits[2], limits[3])
+}
+
+func get_limit() { 
+    return limits[$1-1] 
+}
+
+proc set_xlab() { xlab = $s1 } 
+proc get_xlab() { $s1 = xlab }
+proc set_ylab() { ylab = $s1 } 
+proc get_ylab() { $s1 = ylab }
+
+// rprintfile(String epsfilename, Double SaveFile)
+proc rprintfile() { local i, j
+    if (numarg() == 1) { rp.create_rfile() }
+    if (numarg() == 2) {
+        if ($2 != 0) { rp.create_rfile($s1) }
+    }
+    rp.start_plot($s1)
+    rp.add_graph(this)
+    rp.end_plot()
+    rp.run()
+}
+
+endtemplate TreePlot

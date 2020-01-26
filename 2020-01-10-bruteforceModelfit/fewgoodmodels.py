@@ -1,4 +1,4 @@
-
+## exec(open('fewgoodmodels.py').read())
 
 Models = {}
 

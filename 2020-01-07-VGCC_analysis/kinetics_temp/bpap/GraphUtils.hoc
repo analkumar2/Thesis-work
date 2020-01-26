@@ -1,0 +1,38 @@
+begintemplate GraphUtils
+
+public getlines_list
+objref xvec, yvec
+objref xveclist, yveclist
+objref li, lilist
+
+proc init() {
+    xvec = new Vector()
+    yvec = new Vector()
+    li = new Vector()
+}
+
+
+//
+
+// getlines(Graph g, Matrix xmat, Matrix ymat) 
+// 
+// Return line data in matricies
+// 
+proc getlines() { 
+    getlines_list($o1, xveclist, yveclist)
+}
+
+
+// getlines(Graph g, List xlist, Matrix ylist) 
+// 
+// Return line data in lists of vectors
+// 
+
+proc getlines_list() { local i
+    for (i=-1; ( i = $o1.getline(i, xvec, yvec)) != -1 ; ) {
+        $o2.append(xvec.c)
+        $o3.append(yvec.cl)
+    }        
+}
+
+endtemplate GraphUtils

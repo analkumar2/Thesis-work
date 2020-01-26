@@ -1,0 +1,88 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sbpap-pars = $Revision: 1.1 $, ",pkgversions)
+
+//
+// Parameters
+//
+
+objref parlist                          // Parameter List
+proc pars_set_defaults() {
+    parlist = new VarList()
+    
+    // Simulation parameters 
+    parlist.appendSetDouble("tstop", 100)
+    parlist.appendSetDouble("Dt", 0.2) // Time step for recording membrane potentials
+    parlist.appendSetDouble("dt", dt) // Time step for recording membrane potentials
+    parlist.appendSetDouble("nruns", 1)     
+    parlist.appendSetDouble("epsp_start", 50)// EPSP start time
+    
+    // Neuron parameters
+    parlist.appendSetString("cell_model", "ca1_poirazi")
+    parlist.appendSetDouble("cell_Ra", 50, "cell_set_cell_pars()", "Ohm-cm")
+    parlist.appendSetDouble("diam_thresh", 1.5, "", "um") // What counts as a thin branch
+    
+    // Somatic current injection stimuli
+    parlist.appendSetDouble("soma_iclamp_amp", 3 , "stim.amp = soma_iclamp_state*soma_iclamp_amp",  "nA")
+    parlist.appendSetDouble("soma_iclamp_del", 50, "stim.del = soma_iclamp_del", "ms")
+    parlist.appendSetDouble("soma_iclamp_dur", 1, "stim.dur = soma_iclamp_dur", "ms")
+    parlist.appendSetDouble("soma_iclamp_state", 0, "stim.amp = soma_iclamp_state*soma_iclamp_amp")     
+    
+    // Synapse parameters
+    parlist.appendSetDouble("nsyn",    250)
+    // sah.mark_synapses(scall_inputs, screc_inputs)
+    parlist.appendSetDouble("thickproxfrac",  0.000 )
+    parlist.appendSetDouble("thickmedfrac",   0.016)
+    parlist.appendSetDouble("thickdistfrac",   0.129)
+    parlist.appendSetDouble("thinfrac",   0.855)
+    
+    // Synaptic Stimuli parameters
+    parlist.appendSetDouble("noise", 0)
+    parlist.appendSetDouble("start", 50, "set_all_input_pars()", "ms")
+    parlist.appendSetDouble("jitter_type", 1, "", "")
+    parlist.appendSetDouble("jitter", 1, "", "ms")
+    parlist.appendSetDouble("interval", 500, "set_all_input_pars()", "ms")
+    parlist.appendSetDouble("spiketime_state",0)
+    parlist.appendSetString("scstim_file","./scstim.dat")
+    
+    // Spines and calcium
+    // 10 R-type ca channels with conductance 16pS; divide by area of spine.
+    parlist.appendSetDouble("headdiam",0.4,"set_all_input_pars()", "um")
+    parlist.appendSetDouble("headL",0.2,"set_all_input_pars()", "um")
+    parlist.appendSetDouble("neckdiam",0.2)
+    parlist.appendSetDouble("neckL",1)
+    parlist.appendSetDouble("cai0", 70e-6, "set_all_input_pars()", "mM") // From Sabatini & al (2002)
+    parlist.appendSetDouble("kappa", 20, "set_all_input_pars()") // From Sabatini & al (2002)
+    parlist.appendSetDouble("tauca",12, "set_all_input_pars()", "ms") // From Sabatini & al (2002)
+    
+    // R-type Ca channels on spines
+    // parlist.appendSetDouble("gmax_car_spine",10*16e-12/(PI*0.2*1.0*1e-8),"set_all_input_pars()","S/cm2")
+    parlist.appendSetDouble("gmax_car_spine",170,"set_all_input_pars()","pS")
+    
+    // Synpse paramters
+    // AMPA
+    parlist.appendSetDouble("taurise_exp_AmpaSyn", 0.2)
+    parlist.appendSetDouble("taufast_exp_AmpaSyn", 4)
+    parlist.appendSetDouble("tauslow_exp_AmpaSyn", 10) // Anything >5 will do
+    parlist.appendSetDouble("afast_AmpaSyn", 1)
+    parlist.appendSetDouble("T_exp_AmpaSyn", 33)
+    parlist.appendSetDouble("e_ampa", 0, "", "mV")
+    // 0.000022 below thresh; 0.000023 above with cvode and atol=0.001
+    // And with 0.25ms fixed time step
+    parlist.appendSetDouble("gsbar_ampa", 0.20E-3, "set_all_input_pars()","uS")
+    parlist.appendSetDouble("ampa_scaled",0,"set_all_input_pars()")
+    
+    // NMDA
+    parlist.appendSetDouble("e_nmda", 0)
+    parlist.appendSetDouble("gsbar_nmda", 0.045E-3, "set_all_input_pars()","uS")
+    parlist.appendSetDouble("dendburst_state", 1, "set_all_input_pars()")
+    parlist.appendSetDouble("ka_blocked_state", 0, "kapblocker.block(ka_blocked_state) kadblocker.block(ka_blocked_state) ")
+    parlist.appendSetDouble("taulmin_ka",lmin_kad, "lmin_kad=taulmin_ka lmin_kap=taulmin_ka", "ms")
+    parlist.appendDouble("K0_NmdaSyn", "", "mM")
+    parlist.appendDouble("delta_NmdaSyn")
+    parlist.appendDouble("cvode_atol")
+    parlist.appendDouble("cvode_on")
+    parlist.appendDouble("dt")
+    // Set the Vargas & Robinson "Figure 3" parameters
+    K0_NmdaSyn =  2.57                   
+    delta_NmdaSyn = 0.96
+}

@@ -1,0 +1,564 @@
+// Make a set of lists, each containing the oblique sections
+// that form a continuous path: starting from the section attached 
+// to the trunk and ending at the apical tip section. 
+
+// OLD CODE: ADJUSTED BY MARTINE ROSA GROEN (martine.groen@gmail.com) TO IMPLEMENT MULTIPLE MORPHOLOGIES, 
+// this code refinement makes that the oblique path are traced automatically from an 
+// ending to the trunk (Defined in apical-trunk-list), preventing the author to 
+// manually type these paths with new morphologies (with the possible type errors)
+// It is checked with the origin code. The only differences found in the original 
+// code are (between brackets the new version)
+// 26-109-111 (should be 25-109-111)
+// 26-109-110 (should be 26-109-110)
+// 104-105 (should be 103-105)
+// 62-63 (double in the opl list in the Poirazi original)
+// All these changes are due to typing errors in the original code. However in cell-setup 
+// the first segment in the list (the trunk segment) is disregarded in the setting up of
+// ion channels, because the trunk is setup before. In this trunk setup, the ion channels
+// are distributed acording to distance or constants across the tree, making this 
+// type errors without any effect.  
+
+/*
+objref pl[150],opl[150]
+plcount=0
+pl[plcount]=new SectionList()
+
+apical_dendrite[0] pl[plcount].append()
+apical_dendrite[1] pl[plcount].append()
+apical_dendrite[2] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[0] pl[plcount].append()
+apical_dendrite[1] pl[plcount].append()
+apical_dendrite[3] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[4] pl[plcount].append()
+apical_dendrite[5] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[6] pl[plcount].append()
+apical_dendrite[7] pl[plcount].append()
+apical_dendrite[8] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[6] pl[plcount].append()
+apical_dendrite[7] pl[plcount].append()
+apical_dendrite[9] pl[plcount].append()
+apical_dendrite[10] pl[plcount].append()
+apical_dendrite[11] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[6] pl[plcount].append()
+apical_dendrite[7] pl[plcount].append()
+apical_dendrite[9] pl[plcount].append()
+apical_dendrite[10] pl[plcount].append()
+apical_dendrite[12] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[6] pl[plcount].append()
+apical_dendrite[7] pl[plcount].append()
+apical_dendrite[9] pl[plcount].append()
+apical_dendrite[13] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[14] pl[plcount].append()
+apical_dendrite[116] pl[plcount].append()
+apical_dendrite[117] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[14] pl[plcount].append()
+apical_dendrite[116] pl[plcount].append()
+apical_dendrite[118] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[16] pl[plcount].append()
+apical_dendrite[17] pl[plcount].append()
+apical_dendrite[18] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[16] pl[plcount].append()
+apical_dendrite[17] pl[plcount].append()
+apical_dendrite[19] pl[plcount].append()
+apical_dendrite[20] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[16] pl[plcount].append()
+apical_dendrite[17] pl[plcount].append()
+apical_dendrite[19] pl[plcount].append()
+apical_dendrite[21] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[23] pl[plcount].append()
+apical_dendrite[24] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[27] pl[plcount].append()
+apical_dendrite[28] pl[plcount].append()
+apical_dendrite[29] pl[plcount].append()
+apical_dendrite[30] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[27] pl[plcount].append()
+apical_dendrite[28] pl[plcount].append()
+apical_dendrite[29] pl[plcount].append()
+apical_dendrite[31] pl[plcount].append()
+apical_dendrite[32] pl[plcount].append()
+apical_dendrite[33] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[27] pl[plcount].append()
+apical_dendrite[28] pl[plcount].append()
+apical_dendrite[29] pl[plcount].append()
+apical_dendrite[31] pl[plcount].append()
+apical_dendrite[32] pl[plcount].append()
+apical_dendrite[34] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[27] pl[plcount].append()
+apical_dendrite[28] pl[plcount].append()
+apical_dendrite[29] pl[plcount].append()
+apical_dendrite[31] pl[plcount].append()
+apical_dendrite[35] pl[plcount].append()
+apical_dendrite[36] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[27] pl[plcount].append()
+apical_dendrite[28] pl[plcount].append()
+apical_dendrite[29] pl[plcount].append()
+apical_dendrite[31] pl[plcount].append()
+apical_dendrite[35] pl[plcount].append()
+apical_dendrite[37] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[27] pl[plcount].append()
+apical_dendrite[28] pl[plcount].append()
+apical_dendrite[38] pl[plcount].append()
+apical_dendrite[39] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[27] pl[plcount].append()
+apical_dendrite[28] pl[plcount].append()
+apical_dendrite[38] pl[plcount].append()
+apical_dendrite[40] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[42] pl[plcount].append()
+apical_dendrite[43] pl[plcount].append()
+apical_dendrite[44] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[42] pl[plcount].append()
+apical_dendrite[43] pl[plcount].append()
+apical_dendrite[45] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[46] pl[plcount].append()
+apical_dendrite[47] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[48] pl[plcount].append()
+apical_dendrite[49] pl[plcount].append()
+apical_dendrite[50] pl[plcount].append()
+apical_dendrite[51] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[48] pl[plcount].append()
+apical_dendrite[49] pl[plcount].append()
+apical_dendrite[50] pl[plcount].append()
+apical_dendrite[52] pl[plcount].append()
+apical_dendrite[53] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[48] pl[plcount].append()
+apical_dendrite[49] pl[plcount].append()
+apical_dendrite[50] pl[plcount].append()
+apical_dendrite[52] pl[plcount].append()
+apical_dendrite[54] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[48] pl[plcount].append()
+apical_dendrite[49] pl[plcount].append()
+apical_dendrite[55] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[56] pl[plcount].append()
+apical_dendrite[57] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[58] pl[plcount].append()
+apical_dendrite[59] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[60] pl[plcount].append()
+apical_dendrite[61] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[62] pl[plcount].append()
+apical_dendrite[63] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[62] pl[plcount].append()
+apical_dendrite[63] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[65] pl[plcount].append()
+apical_dendrite[66] pl[plcount].append()
+apical_dendrite[67] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[65] pl[plcount].append()
+apical_dendrite[66] pl[plcount].append()
+apical_dendrite[68] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[69] pl[plcount].append()
+apical_dendrite[70] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[71] pl[plcount].append()
+apical_dendrite[72] pl[plcount].append()
+apical_dendrite[73] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[71] pl[plcount].append()
+apical_dendrite[72] pl[plcount].append()
+apical_dendrite[74] pl[plcount].append()
+apical_dendrite[75] pl[plcount].append()
+apical_dendrite[76] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[71] pl[plcount].append()
+apical_dendrite[72] pl[plcount].append()
+apical_dendrite[74] pl[plcount].append()
+apical_dendrite[75] pl[plcount].append()
+apical_dendrite[77] pl[plcount].append()
+apical_dendrite[78] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[71] pl[plcount].append()
+apical_dendrite[72] pl[plcount].append()
+apical_dendrite[74] pl[plcount].append()
+apical_dendrite[75] pl[plcount].append()
+apical_dendrite[77] pl[plcount].append()
+apical_dendrite[79] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[71] pl[plcount].append()
+apical_dendrite[72] pl[plcount].append()
+apical_dendrite[74] pl[plcount].append()
+apical_dendrite[80] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[81] pl[plcount].append()
+apical_dendrite[82] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[83] pl[plcount].append()
+apical_dendrite[84] pl[plcount].append()
+apical_dendrite[85] pl[plcount].append()
+apical_dendrite[86] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[83] pl[plcount].append()
+apical_dendrite[84] pl[plcount].append()
+apical_dendrite[85] pl[plcount].append()
+apical_dendrite[87] pl[plcount].append()
+apical_dendrite[88] pl[plcount].append()
+apical_dendrite[89] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[83] pl[plcount].append()
+apical_dendrite[84] pl[plcount].append()
+apical_dendrite[85] pl[plcount].append()
+apical_dendrite[87] pl[plcount].append()
+apical_dendrite[88] pl[plcount].append()
+apical_dendrite[90] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[83] pl[plcount].append()
+apical_dendrite[84] pl[plcount].append()
+apical_dendrite[85] pl[plcount].append()
+apical_dendrite[87] pl[plcount].append()
+apical_dendrite[91] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[83] pl[plcount].append()
+apical_dendrite[84] pl[plcount].append()
+apical_dendrite[92] pl[plcount].append()
+apical_dendrite[93] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[83] pl[plcount].append()
+apical_dendrite[84] pl[plcount].append()
+apical_dendrite[92] pl[plcount].append()
+apical_dendrite[94] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[95] pl[plcount].append()
+apical_dendrite[96] pl[plcount].append()
+apical_dendrite[97] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[95] pl[plcount].append()
+apical_dendrite[96] pl[plcount].append()
+apical_dendrite[98] pl[plcount].append()
+apical_dendrite[99] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[95] pl[plcount].append()
+apical_dendrite[96] pl[plcount].append()
+apical_dendrite[98] pl[plcount].append()
+apical_dendrite[100] pl[plcount].append()
+apical_dendrite[101] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[95] pl[plcount].append()
+apical_dendrite[96] pl[plcount].append()
+apical_dendrite[98] pl[plcount].append()
+apical_dendrite[100] pl[plcount].append()
+apical_dendrite[102] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[104] pl[plcount].append()
+apical_dendrite[105] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[41] pl[plcount].append()
+apical_dendrite[107] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[26] pl[plcount].append()
+apical_dendrite[108] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[26] pl[plcount].append()
+apical_dendrite[109] pl[plcount].append()
+apical_dendrite[110] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[26] pl[plcount].append()
+apical_dendrite[109] pl[plcount].append()
+apical_dendrite[111] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[22] pl[plcount].append()
+apical_dendrite[112] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[15] pl[plcount].append()
+apical_dendrite[113] pl[plcount].append()
+apical_dendrite[114] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[15] pl[plcount].append()
+apical_dendrite[113] pl[plcount].append()
+apical_dendrite[115] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+
+plcount=plcount+1
+pl[plcount]=new SectionList()
+apical_dendrite[64] pl[plcount].append()
+apical_dendrite[106] pl[plcount].append()
+opl[plcount]=new ObliquePath(pl[plcount])
+forsec pl[plcount] print secname()
+print plcount
+*/
+
+// START NEW CODE!! /////////////////////////////////////////////////////////////////
+
+objref apical
+apical = new SectionList()
+forsec "apical_dendrite"{
+  apical.append()
+}
+
+//Define new variables
+objref currentsection,trunk_to_obliqueending, obliqueending_to_trunk
+strdef origintrunk
+trunk_to_obliqueending=new SectionList()
+obliqueending_to_trunk=new List()
+objref pl[150],opl[150]
+plcount=-1 // to make the first counter in list pl 0
+
+func istrunk() { local x  // return 1 if $o1.sec is the origin of the path
+ //$o1.sec print secname() // if you want to see it working
+  forsec apical_trunk_list{
+    origintrunk=secname()
+    $o1.sec x=issection(origintrunk)
+    if (x==1) {
+      return x
+    }
+  }
+  return x // In this case 0 because it has not forfilled the x==1 if statement
+}
+
+obfunc trace_to_trunk() { localobj path
+  //path = new SectionList()
+  path = new List()
+  while (istrunk(this)!=1) { // The function isorigin is defined in apical-trunk-list.hoc
+    path.append(this)
+    this = parsr(this) // the new this is the parent of the previous this
+  }
+  //this.sec path.append() // to add the trunk segment
+  path.append(this)
+  return path
+}
+
+obfunc reverse_list(){ localobj revlist,reftemp
+  revlist=new SectionList()
+  for(i=$o1.count()-1;i>=0;i=i-1) {
+    reftemp=$o1.o(i)
+    reftemp.sec revlist.append()
+  }
+  return revlist
+}
+
+forsec apical {
+  secname() currentsection=new SectionRef()
+  if (currentsection.nchild==0){ //endsegment
+    //printf("end segment is ")
+    //print secname()
+    currentsection this = new SectionRef()
+    obliqueending_to_trunk=trace_to_trunk()
+    if(obliqueending_to_trunk.count()!=1){ // Discard the endsegment of the trunk as being an oblique
+      plcount=plcount+1
+      trunk_to_obliqueending=reverse_list(obliqueending_to_trunk)
+
+      pl[plcount]=new SectionList()
+      pl[plcount]=trunk_to_obliqueending
+      opl[plcount]=new ObliquePath(pl[plcount])
+      
+      // to visually check the list of segments print to command line
+      //printf("new oblique \n")      
+      //print plcount
+      //forsec pl[plcount]{
+      //  print secname()
+      //}
+    
+      //printf("trunk section \n")
+      //opl2[plcount2].trunk_section.sec print secname()
+    }
+  }
+}
+
+

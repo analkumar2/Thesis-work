@@ -1,0 +1,145 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%s, ", nrnversion(), pkgversions)
+sprint(pkgversions,"%sbpap-sims = $Revision: 1.5 $, ",pkgversions)
+
+load_file("bpap-dendburst.hoc")
+load_file("bpap-somainj.hoc")
+load_file("TreePlot.hoc")
+load_file("ChannelBlocker.hoc")
+load_file("VarList.hoc")
+load_file("epspsizes.hoc")
+load_file("TreePlotArray.hoc")
+load_file("Integrator.hoc")
+load_file("utils.hoc")
+load_file("bpap-graphics.hoc")
+load_file("bpap-spiketrain.hoc")
+load_file("bpap-cell.hoc")
+load_file("bpap-pars.hoc")
+load_file("bpap-data.hoc")
+load_file("bpap-run.hoc")
+
+//cvode.atol(1e-8) for no activity
+// Set up the parameter lists and the default parameters
+pars_set_defaults()
+
+cell_model = "ca1_mrg_cell2"
+
+// Need to set these here to speed up computation that occurs 
+// while loading the model
+cell_set_cvode_atol(0.0001)
+
+cell_setup_cell()
+
+// cell_setup_cell() uses cvode, so switch back to fixed step if desired here
+cell_set_cvode_active(1)
+
+// We want to record from four synapses on the trunk in this case
+screc_inputs_sri = new Vector()
+objref seg 
+// Specify a SegmentRefList of synapses we alway want to record from.
+// These are at the following distances from the soma:
+//
+// Dist    Segment                          
+//  25.7um apical_dendrite[0] (0.25)         
+// 115.4um apical_dendrite[4] (0.50) 
+// 258.6um apical_dendrite[25](0.50)
+
+// These distances can be found using cell_print_trunk_distances()
+
+// apical_dendrite[0] seg = new SegmentRef(0.25)
+// screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+// apical_dendrite[4] seg = new SegmentRef(0.5)
+// screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+// apical_dendrite[25] seg = new SegmentRef(0.5)
+// screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+
+parlist.appendVector("screc_inputs_sri")
+screc_inputs_sr = new SegmentRefList()
+// for i=0, screc_inputs_sri.size() - 1 {
+//     screc_inputs_sr.append_segment(segreflist.srl.object(screc_inputs_sri.x(i)))
+// }
+//create_and_distribute_screc_inputs()
+create_and_distribute_inputs()
+
+// Print picture of cell
+graphics_lineup_shapeplot()
+graphics_mark_screc_synapses()
+// Shape[0].printfile("datastore/somainj.eps")
+
+//
+// Experimental setup 
+// 
+
+// Soma iclamp
+setup_soma_iclamp()
+tstop = 200
+
+// Channel blockers
+objref kapblocker, kadblocker
+kapblocker = new ChannelBlocker("gkabar_kap",sl)
+kadblocker = new ChannelBlocker("gkabar_kad",sl)
+
+strdef dataname
+proc save_parameters_and_data_sims() {
+    data_get_dataname(dataname, "dendburst")
+    data_save_parameters_and_data(dataname)
+}
+
+// 
+//  The commands to run the simulations
+// 
+
+// Figure 1: response to somatic current injection
+
+dendburst_state = 0
+soma_iclamp_state = 1
+
+if (1) {
+    nruns = 1
+    run_bpap()
+    
+    strdef dataname
+    sprint(dataname, "%s-somainj-Ra%03g-cv%01g", cell_model, cell_Ra, cvode_on)
+    data_save_parameters_and_data(dataname)
+}
+
+// Figures 2-4
+// 
+// We want to record from a different set of synapses in this case
+screc_inputs_sri = new Vector()
+objref seg 
+// Specify a SegmentRefList of synapse we alway want to record from.
+// oc>segreflist.srl.o(screc_inputs_sri.x(0)).name     
+// apical_dendrite[5] seg = new SegmentRef(0.125)
+// screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+// apical_dendrite[74] seg = new SegmentRef(0.5)
+// screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+// apical_dendrite[51] seg = new SegmentRef(0.91666667 )
+// screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+// apical_dendrite[28] seg = new SegmentRef(0.5 )
+// screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+
+//10, 146, 102, 49
+parlist.appendVector("screc_inputs_sri")
+screc_inputs_sr = new SegmentRefList()
+// for i=0, screc_inputs_sri.size() - 1 {
+//     screc_inputs_sr.append_segment(segreflist.srl.object(screc_inputs_sri.x(i)))
+// }
+//create_and_distribute_screc_inputs()
+create_and_distribute_inputs()
+graphics_lineup_shapeplot()
+graphics_mark_screc_synapses()
+
+// Figures 2 & 4: response to SC stimulation from 240 synapses 
+
+dendburst_state = 1
+soma_iclamp_state = 0
+nsyn = 250
+jitter = 0
+nruns = 100
+vtreerecinds.append(38, 39, 40, 224, 225, 226)
+
+if (1) {
+    run_bpap()
+    save_parameters_and_data_sims()
+}

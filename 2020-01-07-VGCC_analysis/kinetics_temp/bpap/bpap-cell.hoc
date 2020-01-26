@@ -1,0 +1,250 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%s, ", nrnversion(), pkgversions)
+sprint(pkgversions,"%sbpap-cell = $Revision: 1.4 $, ",pkgversions)
+
+load_file("bpap-data.hoc")
+load_file("Segment.hoc")
+load_file("ReferenceAxis.hoc")
+
+//
+// Cell model
+// 
+
+// Proc to set Ra in each section from global variable cell_Ra
+proc cell_set_cell_pars() {
+    forall Ra = cell_Ra
+}
+
+// Proc to turn on cvode and record this in cvode_on so it can be recorded
+proc cell_set_cvode_active() {
+    cvode_active($1)
+    cvode_on = $1
+}
+
+// Proc to set cvode atol and save it in cvode_atol so it can be recorded
+proc cell_set_cvode_atol() {
+    cvode_atol = $1
+    cvode.atol(cvode_atol)
+}
+
+// Proc to load the cell model
+strdef cmd
+proc cell_load_cell_model() {
+    // Load Neuron file    
+    sprint(cmd, "load_file(\"%s.hoc\")",$s1)
+    execute1(cmd)
+}
+
+strdef cell_model
+objref base, apex
+//create apical_dendrite[93] // COMMENTED OUT BY MR GROEN, double defined
+objref measure[2]
+
+// Procedure to load the cell model and determine some statistics of
+// the cell
+proc cell_setup_cell () {
+    ra_adjustment = 0
+    cell_set_cvode_active(1)
+    cell_load_cell_model(cell_model)    
+    cell_set_cell_pars()
+    
+    // This should give a maxium effective L of leas than 0.2 during synaptic stimulation without a spike
+    // and an effective L of less than 0.5 when there is a spike
+    // Verify this with:
+    // forsec "apical" print L/nseg/length_constant(Ra, 1/get_max_g_in_sim(), diam) 
+    
+    forsec "apical" cell_set_max_length_by_length_constant(1) 
+    cell_statistics()
+    cell_find_erest()
+    cell_measure_impedance()
+}
+
+// Find resting potential
+erest=0
+proc cell_find_erest() { 
+    run()
+    erest=v(0.5)
+}
+
+// Procedure to set up some useful lists and do some statistics on
+// the cell 
+
+objref sl
+objref ra
+objref diams, distances, perp_distances
+objref segreflist, parents
+objref trunk_segreflist, trunk_sri
+objref apical_trunk_list
+
+proc cell_statistics() { local aptf, i
+    print "Calculating cell statistics"
+    
+    // Set default section as origin for measuring distances from
+    distance()
+    
+    // Set up the reference axis for measuring perpendicular distance 
+    // and distributing synapses
+    ra = new ReferenceAxis()
+    ra.setup_with_segrefs(base, apex, ra_adjustment)
+    apexdist = sqrt(ra.axis.sumsq())+ra.adjustment
+    datalist.appendSetDouble("apexdist ", apexdist)
+    
+    // Make a section list of the apical dendrites
+    sl = new SectionList() 
+    forsec "apical" sl.append()	
+    
+    // Make a list of the segments from the section list
+    segreflist = new SegmentRefList()
+    // Append only *internal* segments as point processes that use
+    // ca_ion cannot by placed on 0 or 1
+    
+    segreflist.append_segments_from_section(0.5)
+    segreflist.append_internal_segments_from_seclist(sl)
+    segreflist.parents(parents)
+    
+    // Make a list of inds of segrefs that are on the trunk
+    trunk_segreflist = new SegmentRefList()
+    trunk_segreflist.append_internal_segments_from_seclist(apical_trunk_list)
+    trunk_sri = new Vector()
+    for i=0, trunk_segreflist.count()-1 {
+        trunk_sri.append(segreflist.find_ind_of_segment(trunk_segreflist.srl.o(i)))
+    }
+    
+    // Section diameters and distances
+    diams = new Vector()
+    distances = new Vector()
+    perp_distances = new Vector()
+    
+    // Set number of segments
+    nsegs = segreflist.srl.count()
+    // Go through each segment in turn
+    for i = 0, nsegs-1 {
+        segreflist.srl.object(i).secref.sec {
+            // Write diameters
+            diams.append(diam(segreflist.srl.object(i).x))
+        
+            // Write distances
+            distances.append(distance(segreflist.srl.object(i).x))
+        }
+        
+        perp_distances.append(ra.apply_expr_to_segref(segreflist.srl.object(i),"H*l")/ra.apply_expr_to_segref(segreflist.srl.object(i),"l"))
+    }
+    
+    // Write to list
+    datalist.appendVector("diams")
+    datalist.appendVector("distances")
+    datalist.appendVector("perp_distances")
+    datalist.appendVector("parents")
+    datalist.appendVector("trunk_sri")
+}    
+
+// Find the theoretical maxium conductance in each section
+func cell_get_max_gbar() { local gbar
+    gbar = 0 
+    if (ismembrane("hha2")) { gbar += gkbar_hha2 }
+    if (ismembrane("hha2")) { gbar += gnabar_hha2 }
+    if (ismembrane("hha2")) { gbar += gl_hha2 }
+    if (ismembrane("hha_old")) { gbar += gkbar_hha_old }
+    if (ismembrane("hha_old")) { gbar += gnabar_hha_old }
+    if (ismembrane("hha_old")) { gbar += gl_hha_old }
+    if (ismembrane("pas"))  { gbar += g_pas }
+    if (ismembrane("h"))    { gbar += gbar_h }
+    if (ismembrane("kap"))  { gbar += gkabar_kap }
+    if (ismembrane("kad"))  { gbar += gkabar_kad }
+    if (ismembrane("km"))   { gbar += gbar_km * 1E-4 }
+    if (ismembrane("cal"))   { gbar += gcalbar_cal }
+    if (ismembrane("cat"))   { gbar += gcatbar_cat }
+    if (ismembrane("somacar"))   { gbar += gcabar_somacar }
+    if (ismembrane("kca"))   { gbar += gbar_kca }
+    if (ismembrane("mykca"))   { gbar += gkbar_mykca }
+    if (ismembrane("calH"))   { gbar += gcalbar_calH }
+    return(gbar)
+}
+
+// Find the maximum possible value of g in each channel after a run
+// This will be an overestimate, since not all channels will have been 
+// at their most open at the same time
+func cell_get_max_g_in_run() { local gmax
+    gmax = 0 
+    if (ismembrane("hha2")) { gmax += gmax_hha2 }
+    if (ismembrane("hha_old")) { gmax += gmax_hha_old }
+    if (ismembrane("pas"))  { gmax += g_pas }
+    if (ismembrane("h"))    { gmax += gmax_h }
+    if (ismembrane("kap"))  { gmax += gmax_kap }
+    if (ismembrane("kad"))  { gmax += gmax_kad }
+    if (ismembrane("km"))   { gmax += gmax_km }
+    if (ismembrane("cal"))   { gmax += gmax_cal }
+    if (ismembrane("cat"))   { gmax += gmax_cat }
+    if (ismembrane("somacar"))   { gmax += gmax_somacar }
+    if (ismembrane("kca"))   { gmax += gmax_kca }
+    if (ismembrane("mykca"))   { gmax += gmax_mykca }
+    if (ismembrane("calH"))   { gmax += gmax_calH }
+    return(gmax)
+}
+
+//
+// length_constant(Ri, Rm, d) 
+// Compute the length constant in um in a section where the units of 
+// Ri are Ohm-cm
+// Rm is  Ohm-cm2
+// diam is um
+func cell_length_constant() { local Ri, Rm , d
+    Ri = $1 * 1E4                       // Convert Ohm-cm to Ohm-um
+    Rm = $2 * 1E8                       // Convert Ohm-cm2 to Ohm-um2
+    d  = $3 
+    return(sqrt(Rm*d/(4*Ri)))
+}
+
+func cell_get_length_by_length_constant() {
+    return(L/nseg/cell_length_constant(Ra, 1/cell_get_max_gbar(), diam))
+}
+
+// Set the maxumum length as a fraction of the length constant by increaseing the number of segments
+proc cell_set_max_length_by_length_constant() { local lmax, l, n
+    lmax = $1                           // Maximum allowed length in terms of length constant
+    l = cell_get_length_by_length_constant() // Actual length of each segment
+    if (l > lmax) {
+        nseg = nseg * l / lmax          // Increase nseg 
+        if (nseg % 2) { nseg += 1 }     // Ensure nseg is odd
+    }
+}
+
+// The business
+objref imp
+objref transimp, inputimp
+transimp = new Vector()
+inputimp = new Vector()
+
+proc cell_measure_impedance() { local i, maxntestsegs
+    // We seem to need to initialise the cell first
+    init()
+    
+    maxntestsegs = segreflist.srl.count()
+    
+    // New impedance object
+    imp = new Impedance()
+    
+    // Locate voltage electrode in soma
+    imp.loc(0)
+    
+    // Compute transfer impdeance at 0Hz between this point and all other points 
+    imp.compute(0)
+    
+    // Now get the transfer impedance for each segment in turn
+    transimp.resize(maxntestsegs)
+    inputimp.resize(maxntestsegs)
+    for i= 0, maxntestsegs - 1 {        
+        segreflist.srl.object(i).secref.sec {
+            transimp.x(i) = imp.transfer(segreflist.srl.object(i).x)
+            inputimp.x(i) = imp.input(segreflist.srl.object(i).x)
+        }
+    }
+    datalist.appendVector("transimp")
+    datalist.appendVector("inputimp")
+}
+
+proc cell_print_trunk_distances() { local i
+    for i=0, trunk_sri.size()-1 {
+        segreflist.srl.o(trunk_sri.x(i)).print_distance()
+    }
+}

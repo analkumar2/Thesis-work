@@ -1,0 +1,54 @@
+begintemplate ChannelBlocker
+
+public blocked, block, unblock
+strdef varname
+objref this
+objref seclist, gbar
+strdef cmd
+
+proc init() {                           // $s1 is name of var to block
+    // $2 is section list to block
+    varname=$s1
+    seclist=$o2
+    
+    // Store original values
+    gbar = new Vector()
+    sprint(cmd,"gbar.append(%s)",varname)
+    forsec seclist {
+        for(x) {
+            execute(cmd,this)
+        }
+    }
+    i = 0
+}
+
+proc block() {
+    if (numarg() == 1) {
+        blocked = $1
+    } else {
+        blocked = 1
+    }
+    if (blocked == 1) {                 // Block
+        sprint(cmd,"%s=0",varname)
+        forsec seclist {
+            for(x) {
+                execute(cmd)
+            }
+        }
+    } else {                            // Unblock by restoring values
+        sprint(cmd,"%s=gbar.x(i)",varname)
+        i = 0
+        forsec seclist {
+            for(x) {
+                execute(cmd,this)
+                i+=1
+            }
+        }
+    }
+}
+
+proc unblock() { 
+    block(0)
+}
+
+endtemplate ChannelBlocker

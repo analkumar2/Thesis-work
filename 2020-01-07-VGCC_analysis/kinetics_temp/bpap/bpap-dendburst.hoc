@@ -1,0 +1,239 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sbpap-dendburst = $Revision: 1.22 $, ",pkgversions)
+
+load_file("bpap-cell.hoc")
+load_file("bpap-record.hoc")
+load_file("utils.hoc")
+load_file("PointProcessDistributor.hoc")
+load_file("NmdaAmpaSynStim.hoc")
+load_file("NmdaAmpaSpineSynStim.hoc")
+load_file("bpap-data.hoc")
+
+//
+// Synapses on the SC input to the apical dendrite.  This is a similar
+// situation to Spruston et al. (1995).  We would like the inputs to 
+// be distributed within 100 to 450 um measured perpendicular from the
+// pyramidal cell layer (Megias et al. 2001).  To do this we have to use
+// the routines of Poirazi, perhaps coupled with my PointProcessDistributor 
+// object
+// 
+
+objref ppd
+ppd = new PointProcessDistributor(1)
+strdef tmpstr
+
+objref screc_inputs_sr
+// These objrefs will be lists that contain NmdaAmpaSpineSynStim (syn) objects 
+objref screc_inputs                        // SC "Recorded"       
+objref scthin_inputs                       // SC thin dendrites   
+objref scthickprox_inputs                  // Proximal SC         
+objref scthickmed_inputs                   // Medial SC           
+objref scthickdist_inputs                  // Distal SC           
+objref scall_inputs                        // All SC              
+
+// These objrefs will be vectors that contain the indicies of the segrefs
+// on which the NmdaAmpaSpineSynStim are located
+objref screc_inputs_sri                    // SC "Recorded"       
+objref scthin_inputs_sri                   // SC thin dendrites   
+objref scthickprox_inputs_sri              // Proximal SC         
+objref scthickmed_inputs_sri               // Medial SC           
+objref scthickdist_inputs_sri              // Distal SC           
+objref scall_inputs_sri                    // All SC              
+
+//
+// create_and_distribute_synapses(List synstim, int nsyn, Vector segrefs)
+// 
+// Function to create the NmdaAmpaSpineSynStim objects, set their parameters
+// and distribute them using the ppd PointProcessDistributor object.
+// The list of NmdaAmpaSpineSynStim objects is placed in SYNSTIM, NSYN is the number 
+// of synapses to create, and the indicies of the segment references 
+// in which the NmdaAmpaSpineSynStim objects are located are placed in SEGREFS.
+// 
+proc create_inputs() { local n, i
+    n = int($2)
+    // Create the synapses
+    for i=$o1.count(), $o1.count() + n - 1 {
+        $o1.append(new NmdaAmpaSpineSynStim(-1)) // -ve arg prevents location
+        $o1.object(i).spine.head {
+            insert cacum
+            insert car_mag
+        }
+        set_input_pars($o1.object(i))
+    }
+}
+
+proc destroy_inputs() { local nsyn, i
+    nsyn = int($2)
+    // Destroy the synapses
+    for i=0, nsyn-1 {
+        $o1.object($o1.count()-1).destroy() // Destructor method
+        $o1.remove($o1.count()-1)  // Remove ref from list
+    }
+}
+
+
+// 
+// Functions to set parameters
+// 
+proc set_spine_pars() {
+    $o1.spine.head tau_cacum = tauca
+    $o1.spine.head cai0_cacum = cai0
+    $o1.spine.head kappa_cacum = kappa
+    // Assuming uniform concentration in the entire spine head is 
+    // equivalent to a shell of depth diam/4. The 1E3 is to convert
+    // into nm from um
+    $o1.spine.head.diam = headdiam
+    $o1.spine.head.L =    headL
+    $o1.spine.neck.diam = neckdiam
+    $o1.spine.neck.L    = neckL
+    $o1.spine.head depth_cacum = ($o1.spine.head.diam/4) * 1E3
+    $o1.spine.head gmax_car_mag = gmax_car_spine*1E-12/(area(0.5)*1E-8)
+}
+
+proc set_stim_pars() {
+    $o1.netstim.noise = noise
+    if (dendburst_state) {
+        $o1.netstim.start = start
+    } else {
+        $o1.netstim.start = tstop + 1
+    }
+    $o1.netstim.interval = interval
+}
+
+proc set_syn_pars() {
+    $o1.ampasyn.e = e_ampa
+    $o1.netcon.weight = gsbar_ampa 
+    $o1.nmdasyn.e = e_nmda
+    $o1.nmdanetcon.weight = gsbar_nmda 
+}
+
+proc set_input_pars() {
+    set_spine_pars($o1)
+    set_stim_pars($o1)
+    set_syn_pars($o1)
+}
+
+proc disable_synapses() {
+    for i=0, scall_inputs.count()-1 {
+        scall_inputs.object(i).netstim.start = tstop + 1
+    }
+}
+
+// Enable first nsyn synapses 
+proc enable_synapses() { local i 
+    for i=0, scall_inputs.count()-1 {
+        scall_inputs.object(i).netstim.number = tstop/interval * 100
+    }
+}
+
+objref scalefac
+datalist.appendVector("scalefac")
+proc set_all_input_pars() { local i
+    for i=0, scall_inputs.count()-1 {
+        set_input_pars(scall_inputs.object(i))        // Schaffer collateral synapses
+    }
+    scalefac = new Vector(scall_inputs_sri.size())
+    if (ampa_scaled) {
+        cell_measure_impedance()             // Make sure the transimp exists
+        scalefac.fill(transimp.ind(scall_inputs_sri).mean())
+        scalefac.div(transimp.ind(scall_inputs_sri))
+        for i=0, scall_inputs.count()-1 {
+            scall_inputs.object(i).netcon.weight *= scalefac.x(i)
+        }
+    } else {
+        scalefac.fill(1)
+    }
+}
+
+// At one point (rev 1.18 and under), the idea was to create a number
+// of synapses and then activate a certain number (nsynmax) of them to
+// change the number of active synapses. However, now we want to
+// create a different distribution of synapses over the dendritic tree
+// for each simulation.  This means that we will create all the
+// synapses required on each simulation run, and destroy them
+// afterwards. This is not as efficient, but it removes the need to do
+// the permuations which served to randomise the synapses in the rev
+// 1.18 and under.
+
+// Set up the probability distributions of synapses The dendritic tree
+// is divided into four different zones: Thin branches, and thick
+// proximal, medial and distal branches. The fraction of synapses in
+// each zone are given by thinfrac, thickproxfrac, thickmedfrac, and
+// thickdistfrac.
+
+scall_inputs = new List()
+objref nsyn_zone, ratio
+objref screc_inputs, screc_inputs_sri
+proc create_and_distribute_inputs() { local n, i
+    // We may need to create inputs
+    if (nsyn > scall_inputs.count()) {
+        create_inputs(scall_inputs, nsyn - scall_inputs.count())
+    }
+    // Or delete excess inputs
+    if (nsyn < scall_inputs.count()) {
+        destroy_inputs(scall_inputs, scall_inputs.count() - nsyn)
+    }
+    
+    // create_and_distribute_screc_inputs() 
+    // screc_inputs_sr is a list of the SegmentRefs of the synapses which we wish to record from
+    // it has been created  elsewhere (perhaps bpap-interactive.hoc) with commands like
+    // objref screc_inputs_sr
+    // screc_inputs_sr = new SegRefList()
+    // apical_dendrite[57] screc_inputs_sr.append_segements_from_section(0.3)
+    // apical_dendrite[62] screc_inputs_sr.append_segements_from_section(0.5)
+    // Get index of screc_inputs_sr in segfreflist
+    //    segreflist.find_ind(screc_inputs_sri, screc_inputs_sr)
+    // Then locate them on the tree 
+    n = screc_inputs_sr.count()
+    for i=0, (n - 1) {
+        screc_inputs_sr.srl.object(i).secref.sec scall_inputs.object(i).loc(screc_inputs_sr.srl.object(i).x)
+    }
+    utils.list_copy(screc_inputs, scall_inputs, 0, n - 1)
+    
+    // Find the number of synapses per zone, nsyn_per_zone, given the fraction of synapses in each zone and 
+    // the total number of synapses 
+    ratio = new Vector(4)
+    ratio.x(0) = thinfrac
+    ratio.x(1) = thickproxfrac
+    ratio.x(2) = thickmedfrac
+    ratio.x(3) = thickdistfrac
+    utils.mul_ratio_round(nsyn_zone, nsyn - n, ratio)
+    
+    // Synapses on thin dendrites
+    sprint(tmpstr, "((d<1.5) && (H<%f))*l" , apexdist)
+    ppd.setup_probs_from_seglist_with_refaxis(segreflist, ra, tmpstr)
+    //    create_inputs(scthin_inputs, nsyn_zone.x(0))
+    utils.list_copy(scthin_inputs, scall_inputs, n, n  + nsyn_zone.x(0) - 1)
+    ppd.distribute_pps_from_list(scthin_inputs, scthin_inputs_sri)
+    n = n + nsyn_zone.x(0)
+    
+    // Synapses on thick proximal dendrites
+    sprint(tmpstr, "((d>=1.5) && (H<%f))*l" , apexdist * 100/450)
+    ppd.setup_probs_from_seglist_with_refaxis(segreflist, ra, tmpstr)
+    utils.list_copy(scthickprox_inputs, scall_inputs, n, n + nsyn_zone.x(1) - 1)
+    ppd.distribute_pps_from_list(scthickprox_inputs, scthickprox_inputs_sri)
+    n = n + nsyn_zone.x(1)
+    
+    // Synapses on thick medial dendrites
+    sprint(tmpstr, "((d>=1.5) && (H>=%f) && (H<%f))*l" , apexdist * 100/450, apexdist* 250/450)
+    ppd.setup_probs_from_seglist_with_refaxis(segreflist, ra, tmpstr)
+    utils.list_copy(scthickmed_inputs, scall_inputs, n, n + nsyn_zone.x(2) - 1)
+    ppd.distribute_pps_from_list(scthickmed_inputs, scthickmed_inputs_sri)
+    n = n + nsyn_zone.x(2)
+    
+    // Synapses on thick medial dendrites
+    sprint(tmpstr, "((d>=1.5) && (H>=%f) && (H<%f))*l" , apexdist * 250/450, apexdist)
+    ppd.setup_probs_from_seglist_with_refaxis(segreflist, ra, tmpstr)
+    utils.list_copy(scthickdist_inputs, scall_inputs, n, n + nsyn_zone.x(3) - 1)
+    ppd.distribute_pps_from_list(scthickdist_inputs, scthickdist_inputs_sri)
+    
+    // Make federated list
+    scall_inputs_sri = new Vector()
+    scall_inputs_sri.append(screc_inputs_sri, scthin_inputs_sri, scthickprox_inputs_sri, scthickmed_inputs_sri,  scthickdist_inputs_sri)
+    
+    // Set input parameters
+    set_all_input_pars()
+    
+    // Turn on synapses
+    enable_synapses()
+}

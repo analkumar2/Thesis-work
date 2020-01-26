@@ -1,0 +1,477 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sVarList = $Revision: 1.17 $, ",pkgversions)
+
+load_file("FormatFile.hoc")
+load_file("ObjectClass.hoc")
+
+//
+// DoubleVar
+//  
+
+begintemplate DoubleVar
+
+public name, ptr, type, action
+public printf, fprint
+
+strdef name, tmpstr, action
+objref ptr
+
+// new Var("name")
+proc init() {
+    sprint(name,"%s",$s1)
+    ptr = new Pointer(name)
+    if (numarg() >= 2) {
+        sprint(action,"%s",$s2)
+    }
+    if (numarg() >= 3) {
+        sprint(tmpstr,"units(&%s,\"%s\")",name,$s3)
+        execute(tmpstr)
+    }
+}
+
+proc printf() {
+    print name, " = ", ptr.val
+}
+proc fprint() {
+    $o1.printdouble(name, ptr.val)
+}
+endtemplate DoubleVar
+
+//
+// StringVar
+//
+
+begintemplate StringVar
+
+public name, ptr,  type, str, action
+public printf, fprint
+
+strdef name, cmd, str, action
+objref this
+
+// new Var("name")
+proc init() {
+    sprint(name,"%s",$s1)
+    if (numarg() >= 2) {
+        sprint(action,"%s",$s2)
+    }
+}
+
+proc printf() {
+    sprint(cmd,"%s.str = %s",this, name)
+    execute1(cmd) 
+    print name, " = ", str
+}
+
+proc fprint() {
+    sprint(cmd,"%s.str = %s",this, name)
+    execute1(cmd) 
+    $o1.printstr(name,str)    
+}
+
+endtemplate StringVar
+
+//
+// VectorVar
+// 
+
+begintemplate VectorVar
+
+public name, ptr, type, action
+public printf, fprint
+
+strdef name, cmd, action
+objref ptr, this
+objref oc
+
+// new Var("name")
+proc init() {
+    sprint(name,"%s",$s1)
+    if (numarg() >= 2) {
+        sprint(action,"%s",$s2)
+    }
+    oc = new ObjectClass()
+}
+
+func vector_exists() {
+    sprint(cmd,"%s.ptr = %s", this, name)
+    execute1(cmd)
+    if (oc.object_is(ptr,"NULLobject")) {
+        print "VarList: Warning: ", name, " is NULLobject"
+        return 0
+    }
+    return 1
+}
+
+proc printf() {
+    if (vector_exists()) {
+        print name, " = ", ptr.printf()
+    }
+}
+proc fprint() {
+    if (vector_exists()) {
+        $o1.printvec(name, ptr)
+    }
+}
+endtemplate VectorVar
+
+begintemplate MatrixVar
+
+public name, ptr, type, action
+public printf, fprint
+
+strdef name, cmd, action
+objref ptr, this
+objref oc
+
+proc init() {
+    sprint(name,"%s",$s1)
+    if (numarg() >= 2) {
+        sprint(action,"%s",$s2)
+    }
+    oc = new ObjectClass()
+}
+func matrix_exists() {
+    sprint(cmd,"%s.ptr = %s", this, name)
+    execute1(cmd)
+    if (oc.object_is(ptr,"NULLobject")) {
+        print "VarList: Warning: ", name, " is NULLobject"
+        return 0
+    }
+    return 1
+}
+
+proc printf() {
+    if (matrix_exists()) {
+        print name, " = ", ptr.printf()
+    }
+}
+proc fprint() {
+    if (matrix_exists()) {
+        $o1.printmat(name, ptr)
+    }
+}
+endtemplate MatrixVar
+
+//
+// ListVar
+// 
+
+begintemplate ListVar
+
+public name, ptr, type, action
+public printf, fprint
+
+strdef name, cmd, action
+objref ptr, this
+objref oc
+
+// new Var("name")
+proc init() {
+    sprint(name,"%s",$s1)
+    if (numarg() >= 2) {
+        sprint(action,"%s",$s2)
+    }
+    oc = new ObjectClass()
+}
+
+func list_exists() {
+    sprint(cmd,"%s.ptr = %s", this, name)
+    execute1(cmd)
+    if (oc.object_is(ptr,"NULLobject")) {
+        print "VarList: Warning: ", name, " is NULLobject"
+        return 0
+    }
+    return 1
+}
+
+proc printf() {
+    if (list_exists()) {
+        print name, " = "
+        for i=0, ptr.count()-1 {
+            ptr.o(i).printf()
+        }
+    }
+}
+proc fprint() {
+    if (list_exists()) {
+        $o1.printlist(name, ptr)
+    }
+}
+endtemplate ListVar
+
+//
+// VectorListVar
+// 
+
+begintemplate VectorListVar
+
+public name, ptr, type, action
+public printf, fprint
+
+strdef name, cmd, action
+objref ptr, this
+objref oc
+
+// new Var("name")
+proc init() {
+    init_value = 0
+    sprint(name,"%s",$s1)
+    if (numarg() >= 2) {
+        sprint(action,"%s",$s2)
+    }
+    if (numarg() >= 3) {
+        init_value = $3
+    }
+    oc = new ObjectClass()
+}
+
+func vectorlist_exists() {
+    sprint(cmd,"%s.ptr = %s", this, name)
+    execute1(cmd)
+    if (oc.object_is(ptr,"NULLobject")) {
+        print "VarList: Warning: ", name, " is NULLobject"
+        return 0
+    }
+    return 1
+}
+
+proc printf() { local i
+    if (vectorlist_exists()) {
+        print name, " = "
+        for i=0,ptr.count()-1 {
+            ptr.object(i).printf()
+        }
+    }
+}
+proc fprint() {
+    if (vectorlist_exists()) {
+        $o1.printlistasmat(name, ptr, init_value)
+    }
+}
+endtemplate VectorListVar
+
+//
+// VarList
+// 
+
+begintemplate VarList
+
+public append
+public appendDouble, appendSetDouble 
+public appendString, appendSetString
+public appendVector
+public appendVectorList
+public appendMatrix
+public appendList
+public remove
+public printVarNames
+public printf, printf_actions 
+public fprint, fprint_actions
+public save, load
+public execute_actions
+public xstatebutton, xvalue, xradiobuttons
+
+objref l, f, this, ldfile
+strdef tmpstr, path
+
+proc init() {
+    l = new List()
+}
+
+proc append() {
+    l.append($o1)
+}
+
+proc appendDouble() {
+    remove($s1)
+    if (numarg() == 3) { l.append(new DoubleVar($s1, $s2, $s3)) }
+    if (numarg() == 2) { l.append(new DoubleVar($s1, $s2)) }
+    if (numarg() == 1) { l.append(new DoubleVar($s1)) }
+}
+    
+
+proc appendSetDouble() {
+    sprint(tmpstr,"%s = %g",$s1, $2)
+    execute1(tmpstr)
+    if (numarg() == 4) { appendDouble($s1, $s3, $s4) }
+    if (numarg() == 3) { appendDouble($s1, $s3) }
+    if (numarg() == 2) { appendDouble($s1) }
+}
+
+
+proc appendString() {
+    remove($s1)
+    if ( numarg() >= 2 ) {
+        l.append(new StringVar($s1,$s2))
+    } else {
+        l.append(new StringVar($s1))
+    }        
+}
+
+proc appendSetString() {
+    sprint(tmpstr, "strdef %s", $s1)
+    execute(tmpstr)
+    sprint(tmpstr,"%s = \"%s\"",$s1, $s2)
+    execute(tmpstr)
+    if ( numarg() >= 3 ) {
+        appendString($s1,$s3)
+    } else {
+        appendString($s1)
+    }        
+}
+
+proc appendVector() {
+    remove($s1)
+    if ( numarg() >= 2 ) {
+        l.append(new VectorVar($s1,$s2))
+    } else {
+        l.append(new VectorVar($s1))
+    }        
+}
+
+proc appendVectorList() {
+    remove($s1)
+    if ( numarg() == 3 ) { l.append(new VectorListVar($s1,$s2,$3)) }
+    if ( numarg() == 2 ) { l.append(new VectorListVar($s1,$s2)) }
+    if ( numarg() == 1 ) { l.append(new VectorListVar($s1)) }
+}
+
+proc appendMatrix() {
+    remove($s1)
+    if ( numarg() >= 2 ) {
+        l.append(new MatrixVar($s1,$s2))
+    } else {
+        l.append(new MatrixVar($s1))
+    }        
+}
+
+proc appendList() {
+    remove($s1)
+    if ( numarg() >= 2 ) {
+        l.append(new ListVar($s1,$s2))
+    } else {
+        l.append(new ListVar($s1))
+    }        
+}
+
+proc printVarNames() { local i
+    for i=0, l.count()-1 {
+        print l.object(i).name
+    }
+}
+
+proc printf() { local i
+    for i= 0, l.count()-1 { l.object(i).printf() } 
+}
+
+proc printf_actions() { local i
+    for i= 0, l.count()-1 { print l.object(i).action } 
+}
+
+// fprint(FormatFile f)
+proc fprint() { local i
+    for i= 0, l.count()-1 { l.object(i).fprint($o1) } 
+}
+
+proc fprint_actions() { local i
+    for i= 0, l.count()-1 { $o1.printf("{%s}\n",l.object(i).action) } 
+}
+
+proc execute_actions() { local i
+    for i= 0, l.count()-1 { execute(l.object(i).action) } 
+}
+
+// save()                brings up chooser
+// save("filename.hoc")  saves to "filename.hoc"
+// save("","dir")        brings up chooser starting in "dir"
+proc save() {
+    if ((numarg() == 0) || numarg() == 2) {
+        f = new FormatFile("","hoc")
+        if (numarg() == 2) {
+            f.chooser("w","Save Parameters to file","*.hoc","Save","Cancel",$s2)
+        } else {
+            f.chooser("w","Save Parameters to file","*.hoc","Save","Cancel")
+        }
+        f.chooser()
+    } else {
+        f = new FormatFile($s1,"hoc")
+    }
+    f.wopen()
+    fprint(f)
+    fprint_actions(f)
+    f.close()
+}
+
+// Procedure to load from file adapted from stdrun.hoc
+// load()                brings up chooser
+// load("filename.hoc")  loads "filename.hoc"
+// load("","dir")        brings up chooser starting in "dir"
+proc load() {
+    path = "."
+    if (numarg() == 2) {
+        sprint(path,"%s/%s",path,$s2)
+    }
+    if ((numarg() == 0) || numarg() == 2) {
+	      if (object_id(ldfile) == 0) {
+		        ldfile = new File()
+	      }
+	      ldfile.chooser("r", "Load", "*.hoc", "Load", "Cancel", path)
+	      if (ldfile.chooser()) {
+			      load_file(1, ldfile.getname)
+	      }
+    } else {
+        load_file(1, $s1)
+    }
+}
+
+func find() { local i
+    for i=0, l.count()-1 {
+        if (!strcmp(l.object(i).name,$s1)) {
+            return i
+        }
+    }
+    return -1
+}
+
+proc remove() { local ind
+    if ((ind = find($s1)) != -1) {
+        l.remove(ind)
+    }
+}
+
+proc xstatebutton() { local ind
+    ind = find($s2)
+    if ( ind==-1 ) {
+        print this, "xstatebutton(): ", $s2, " not a member of VarList"
+        stop
+    }
+    sprint(tmpstr,"xstatebutton(\"%s\",&%s,\"%s\")",$s1,$s2,l.object(ind).action)
+    execute(tmpstr)
+}
+
+proc xvalue() { local ind
+    ind = find($s2)
+    if ( ind==-1 ) {
+        print this, " xvalue(): ", $s2, " not a member of VarList"
+        stop
+    }
+    sprint(tmpstr,"xvalue(\"%s\",\"%s\",1,\"%s\")",$s1,$s2,l.object(ind).action)
+    execute(tmpstr)
+}
+
+proc xradiobuttons() { local ind, i
+    ind = find($s2)
+    if ( ind==-1 ) {
+        print this, " xvalue(): ", $s2, " not a member of VarList"
+        stop
+    }
+    sprint(tmpstr,"xlabel(\"%s\")",$s1)
+    execute(tmpstr)
+    for i=3,numarg() {
+        sprint(tmpstr,"xradiobutton(\"%s\",\"%s=%d\")",$si,$s2,i-2)
+        execute(tmpstr)
+    }
+}
+
+endtemplate VarList

@@ -1,0 +1,29 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sbpap-spiketrain = $Revision: 1.2 $, ",pkgversions)
+
+objref st, f
+strdef scstim_file
+
+func bpap_spiketrain_choose_file() {
+    f = new File() 
+    f.chooser("r","Select a spiketrain file","*.dat","Select")
+    if (f.chooser()) {
+        f.getname(scstim_file)
+        return 1
+    } 
+    return 0
+}
+
+
+
+proc bpap_spiketrain_set_spiketrain() {
+
+    f = new File($s1)
+    f.ropen()
+    st = new Matrix()
+    st.scanf(f)
+    
+    for i=0,st.nrow-1 {
+        scall_inputs.object(st.x[i][0]).event(st.x[i][1])
+    }
+}

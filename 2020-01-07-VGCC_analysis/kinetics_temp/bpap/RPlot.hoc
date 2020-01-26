@@ -1,0 +1,201 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sRPlot = $Revision: 1.14 $, ",pkgversions)
+
+load_file("FormatFile.hoc")
+load_file("ObjectClass.hoc")
+load_file("FileUtils.hoc")
+
+begintemplate RPlot
+
+public create_rfile, start_plot, add_graph, end_plot
+public run
+public plot
+public clear
+public set_mfrow
+public set_width, set_height
+
+objref xvec, yvec
+objref xveclist, yveclist
+objref rfile
+strdef rfilename, tmpdir
+objref li, lilist
+strdef xlab, ylab, rxlab, rylab
+strdef cmd
+objref oc
+strdef texlab, rlab, tmp
+objref sf, fu
+
+proc init() {
+    sf = new StringFunctions()
+    fu = new FileUtils()
+    fu.tempdirname(tmpdir)
+    
+    if (numarg() == 0) { create_rfile() }
+    if (numarg() == 1) { create_rfile($s1) }
+    
+    // Initialise variables and objects
+    width=6
+    height=4
+    oc = new ObjectClass()
+    xvec = new Vector()
+    yvec = new Vector()
+    li = new Vector()
+}
+
+proc create_rfile() {
+    // Overide filename with argument
+    fu.tempfilename(rfilename)
+    if (numarg() == 1) { rfilename = $s1 }
+    rfile = new FormatFile(rfilename,"R")
+}
+
+func getline() { local i 
+    $o2.line_info($1, li)
+    i = $o2.getline($1, xvec, yvec)
+    return i
+}
+
+proc set_mfrow() {
+    rfile.aopen()
+    rfile.f.printf("par(mfrow=c(%g,%g))\n",$1,$2)
+    rfile.close()
+}
+
+proc start_plot() {
+    rfile.wopen()
+    rfile.f.printf("postscript(file=\"%s\"",$s1)
+    rfile.f.printf(", width=%g", width)  
+    rfile.f.printf(", height=%g",height) 
+    rfile.f.printf(", horizontal = FALSE, onefile = FALSE, paper = \"special\")\n")
+    rfile.close()
+}
+
+// add_graph(Graph g, String filename, String xlabel, String ylabel) 
+proc add_graph() { local limits_set
+    limits_set = 0
+    xlab = ""
+    ylab = ""
+    if (oc.object_is($o1,"TreePlot")) { 
+        $o1.get_xlab(xlab)
+        $o1.get_ylab(ylab)
+    }
+    if (numarg() >= 2) { xlab = $s2 }
+    if (numarg() >= 3) { ylab = $s3 }
+    
+    xveclist = new List()
+    yveclist = new List()
+    lilist = new List()
+    
+    for ( i=-1; ( i = getline(i, $o1)) != -1 ; ) {
+        // xvec and yvec contain the line with Graph internal index i.
+        // and can be associated with the sequential index j.
+        xveclist.append(xvec.c)
+        yveclist.append(yvec.cl)
+        lilist.append(li.c)
+    }
+    vi = $o1.view_info()
+    if (vi != -1) {
+        limits_set = 1
+        xmin = $o1.view_info(vi,5)
+        xmax = $o1.view_info(vi,6)
+        ymin = $o1.view_info(vi,7)
+        ymax = $o1.view_info(vi,8)
+    }
+    if (oc.object_is($o1,"TreePlot")) { 
+        limits_set = 1
+        xmin = $o1.get_limit(1)
+        xmax = $o1.get_limit(2)
+        ymin = $o1.get_limit(3)
+        ymax = $o1.get_limit(4)
+    }
+    textoRtext(xlab, rxlab)
+    textoRtext(ylab, rylab)
+    
+    rfile.aopen()
+    rfile.print_VectorList("xvec",xveclist)
+    rfile.print_VectorList("yvec",yveclist)
+    rfile.print_VectorList("li",lilist)
+
+    if (limits_set) {
+        rfile.f.printf("plot(NA,NA,xlim=c(%g,%g),ylim=c(%g,%g),xlab=%s,ylab=%s)\n",xmin,xmax,ymin,ymax,rxlab,rylab) 
+    } else {
+        rfile.printf("plot(NA,NA,")
+        rfile.printf("xlim=c(min(sapply(xvec,min)),max(sapply(xvec,max))),                            ylim=c(min(sapply(yvec,min)),max(sapply(yvec,max))),")
+        rfile.f.printf("xlab=%s,ylab=%s)\n",rxlab,rylab)
+    }
+    rfile.printf("\
+    for (i in 1:length(xvec)) {\
+        lines(xvec[[i]],yvec[[i]],col=li[[i]][1])\
+    }\n")
+    if (oc.object_is($o1,"TreePlot")) {
+        for ( i=-1; ( i = $o1.getmarks(i, xvec, yvec)) != -1 ; ) {
+            rfile.printvec("xvec",xvec)
+            rfile.printvec("yvec",yvec)
+            rfile.printf("points(xvec,yvec)\n")
+        }
+    }
+    rfile.close()
+}
+
+proc end_plot() {
+    rfile.aopen()
+    rfile.printf("dev.off()\n")
+    rfile.close()
+}
+
+proc run() {
+    fu.basename(rfilename,tmp)
+    sprint(cmd,"R --vanilla CMD BATCH %s.R %s/%s.Rout", rfilename,tmpdir,tmp)
+    system(cmd)
+}
+
+// plot(Graph g, String name) 
+proc plot() {
+    clear()
+    start_plot($s2)
+    if (numarg() == 2) { add_graph($o1) }
+    if (numarg() == 3) { add_graph($o1, $s3) }
+    if (numarg() == 4) { add_graph($o1, $s3, $s4) }
+    end_plot()
+    run()
+}
+
+proc clear() {
+    rfile.unlink()
+}
+
+proc textoRtext() {
+    texlab = $s1
+    sprint(texlab,"%s ",texlab) // Hack to fix bug with tex symbol at end of string
+    rlab = "expression(paste("
+    while (( ind = sf.substr(texlab,"\\")) != -1) {
+        // print texlab, "]"
+        // print rlab, "]"
+        sf.head(texlab,"\\\\",tmp) 
+        if (sf.len(tmp)) {
+            sprint(rlab,"%s\"%s\",",rlab,tmp)
+        }
+        sf.right(texlab,ind+1)               // Get rid of backslash with +1
+        ind = sf.substr(texlab," ")
+        if (ind==0) {
+            sf.right(texlab,ind)      // Keep space straight after backslash
+            //        print "space"
+            continue
+        }
+        ind = sf.head(texlab,"[ \\\\]",tmp) 
+        sprint(rlab,"%s%s,",rlab,tmp)
+        if (sf.substr(texlab,"\\") == ind) { 
+            sf.right(texlab,ind)         // backslash; don't remove
+        } else {
+            sf.right(texlab,ind+1)            // space; remove
+        }
+    }
+    sprint(rlab,"%s\"%s\"))",rlab,texlab)
+    $s2 = rlab
+}
+
+proc set_width() { width = $1 }
+proc set_height() { height = $1 }
+    
+
+endtemplate RPlot

@@ -1,0 +1,113 @@
+// The goal of this experiment is to insure that our cell responses
+// are reasonably similar to the data on back propagating action potentials
+// where the site of current injection is either at the soma or the apical trunk
+
+
+//load_proc("nrnmainmenu")             // load main NEURON library
+//load_template("ExperimentControl")   // load a custom made library function that centralizes parameters so as to 
+load_file("nrngui.hoc")             // load main NEURON library
+load_file("CA1_multi/template/load_templates.hoc")
+strdef accstr                                                // not confuse experimental variable bindings with neurophysiological variable bindings
+objref econ                          // Create an experiment object
+show_errs=1
+debug_lev=1
+econ=new ExperimentControl(show_errs,debug_lev)
+econ.self_define(econ) // points the object at itself
+econ.morphology_dir = "CA1_multi/morphology/old20100922cell2"                             // Setup morphology directory
+econ.generic_dir = "CA1_multi/experiment/"                                    // Setup directory with cell-setup file
+econ.add_lib_dir("Terrence","CA1_multi/lib")                                  // Setup directory with library functions 
+
+if (unix_mac_pc() ==1 ) {
+	econ.data_dir       = "CA1_multi/data"                       // Define directory to save produced data 
+	sprint(econ.syscmd, "mkdir -p %s", econ.data_dir)  // make the data directory
+	system(econ.syscmd)
+}
+
+// Setup cell
+
+econ.xopen_geometry_dependent("old20100922cell2_topadj")  // load the raw cell morphology
+econ.xopen_geometry_dependent("cell-analysis")     // load user-defined semantics on morphology 
+cell_analysis(econ)
+
+printf("Opening cell setup\n")
+econ.xopen_generic("cell-setup")                   // load the cell-setup file (define specific 
+printf("Opened. Setting up cell\n")                // channels, membrane properties etc)
+cell_setup(econ)
+
+// Set simulation parameters for the experiment 
+
+econ.defvar("Simulation Control", "tstop", "750", "Defines when the simulation stops.")
+econ.defvar("Simulation Control", "dt", "0.1", "Timestep")
+econ.defvar("Simulation Control", "steps_per_ms", "10", "How many points are plotted per ms")
+setdt()
+
+
+// Define directories for different cases tested
+strdef data_dir
+//data_dir       = "data/BPAP/Soma"             // Define directory to save produced data for somatic stimulation 
+//data_dir       = "data/BPAP/Dend62"          // Define directory to save produced data for dendrite 62 stimulation
+data_dir       = "data/BPAP/Dend64"          // Define directory to save produced data for dendrite 64 stimulation
+
+if (unix_mac_pc() ==1 ) {
+	sprint(econ.syscmd,  "mkdir -p %s", data_dir)                               // make directory
+	//system(econ.syscmd) 
+}
+
+// Insert current clamp into soma or dendritic section
+somaind = 0
+//access soma[somaind] // uncomment this for poirazi who has multiple somatic compartments
+access soma
+
+proc usetables() { local usetab
+    usetab = $1
+    usetable_mykca = usetab
+    usetable_calH = usetab
+    usetable_cal = usetab
+    usetable_car = usetab
+    usetable_cat = usetab
+    usetable_hha2 = usetab
+    usetable_hha_old = usetab
+    usetable_kad = usetab
+    usetable_kap = usetab
+    usetable_km = usetab
+    usetable_nap = usetab
+    usetable_somacar = usetab
+}
+usetables(0)
+
+// This function is used to override the function 
+// apical_caR_calH_insert()in CA1_multi/experiment/cell-setup.hoc
+// The only difference is that the density of the HVA L-type channel is 
+// the same throughout the dendritic tree
+proc cell_mods_apical_caR_caLH_insert() {
+    forsec apical_trunk_list {
+        for (x) {  
+            xdist = find_vector_distance_precise(secname(),x)
+            insert car
+            gcabar_car(x) = 0.1*soma_car
+            
+            insert calH
+            // if (xdist > 50) {            
+            gcalbar_calH(x) = 4.6*soma_caLH
+            // } else {
+            //    gcalbar_calH(x) = 0.1*soma_caLH
+            // }
+        }
+    }
+}
+
+proc cell_mods_original_apical_caR_caLH_insert() {
+    forsec apical_trunk_list {
+        apical_caR_caLH_insert()
+    }
+}
+
+cell_mods_apical_caR_caLH_insert()
+
+// Set up the reference axis
+// The base is suppose to be the end of the cell body layer
+apical_dendrite[7]  base = new SegmentRef(0)
+// The apex is around the bifurcation of the apical dendritic tree
+apical_dendrite[40] apex = new SegmentRef(0.5)
+// This is an adjustment for the distance of the true soma location 
+ra_adjustment = adjustment

@@ -1,0 +1,277 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sSegment = $Revision: 1.11 $, ",pkgversions)
+
+/*
+
+SegmentRef
+
+sect segref = new SegmentRef(x)
+
+creates SegmentRef segref that refers to a segment x along the section sect.
+
+The SegmentRef segref has two public variables:
+
+segref.secref - the SectionRef referring to sect
+segref.x      - the point x that locates the segment along sect
+
+*/
+
+begintemplate SegmentRef
+public secref, x, name, print_distance
+objref secref
+
+proc init() {
+    secref = new SectionRef()
+    x = $1
+}
+
+proc name() {
+    secref.sec print secname(), "(", x, ")"
+}
+
+proc print_distance() {
+    secref.sec printf("%s, %f, %f\n", secname(), x, distance(x))
+}
+
+endtemplate SegmentRef
+
+/*
+
+SegmentRefList
+
+segreflist = new SegmentRefList()
+
+initialises a new SegmentRefList segreflist.
+
+sect segreflist.append_internal_segments_from_section()
+
+Appends all of the internal (i.e. where x is not 0 or 1) segments from
+the currently-accessed section sect to the SegmentRefList segreflist.
+
+segreflist.append_internal_segments_from_seclist(SectionList seclist)
+
+Appends all of the internal (i.e. where x is not 0 or 1) segments from
+the SectionList seclist to the SegmentRefList segreflist.
+
+sect segreflist.append_nonzero_segments_from_section()
+segreflsit.append_nonzero_segments_from_seclist(SectionList seclist)
+
+The same as the append_internal_segments commands except that segments
+with x=1 are also appended.
+
+The following public variable is useful:
+
+segreflist.srl - the List of SegmentRefs.  Can be accessed using List
+                 member functions
+
+segreflist.parents(Vector parent_indicies)
+
+The ith element of parent_indicies contains the index of the
+SegmentRef in segreflist.srl that is nearest to and ancestral to the
+ith SegmentRef in the list.  Useful for certain kinds of plot.
+
+*/
+
+
+begintemplate SegmentRefList
+
+// Public variables
+
+public srl
+objref srl
+
+// Functions
+
+public append_segments_from_section
+public append_segments_from_seclist
+public append_internal_segments_from_section
+public append_internal_segments_from_seclist
+public append_nonzero_segments_from_section
+public append_nonzero_segments_from_seclist
+public append_segment
+public append_segments_from_segreflist
+public display
+public print_distance
+public parents
+public count
+public find_ind_of_segment
+
+// Private variables
+
+objref bestseg
+
+// Function definitions
+
+proc init() { 
+    srl = new List()
+    verbose = 0
+}
+
+proc append_segments_from_section() { local x 
+    if (numarg() == 1) {
+        srl.append(new SegmentRef($1))
+    } else {
+        for (x) {
+            srl.append(new SegmentRef(x))
+        }
+    }
+}
+
+proc append_segments_from_seclist() { local x
+    forsec $o1 {
+        append_segments_from_section()
+    }
+}
+
+proc append_internal_segments_from_section() { local x 
+    for (x) {
+        if (( x != 0 ) && ( x != 1)) {
+            srl.append(new SegmentRef(x))
+        }
+    }
+}
+
+proc append_internal_segments_from_seclist() { 
+    forsec $o1 {
+        append_internal_segments_from_section()
+    }
+}
+
+proc append_nonzero_segments_from_section() { local x 
+    for (x) {
+        if ( x != 0 )  {
+            srl.append(new SegmentRef(x))
+        }
+    }
+}
+
+proc append_nonzero_segments_from_seclist() { 
+    forsec $o1 {
+        append_nonzero_segments_from_section()
+    }
+}
+
+proc append_segment() {
+    srl.append($o1)
+}
+
+proc append_segments_from_segreflist() {
+    for i=0, $o1.srl.count()-1 {
+        srl.append($o1.srl.object(i))
+    }
+}
+
+proc display() {
+    for i=0,srl.count()-1 {
+        srl.object(i).secref.sec printf("Segment %d: %s, %f\n", i, secname(), srl.object(i).x)
+    }
+}
+
+proc print_distance() {
+    for i=0,srl.count()-1 {
+        srl.object(i).print_distance()
+    }
+}
+
+
+proc parents() { local i, j, x, bsi
+    $o1 = new Vector(srl.count())
+    for i = 0, srl.count()-1 {
+        // Access the section
+        srl.object(i).secref.sec {
+            // Refer to the best matching segment so far
+            // bestseg = new SegmentRef(1)
+            bsi = i                     // Best segment index
+            // Look through all members of list for a parent
+            for j = 0, srl.count()-1 {
+                
+                if (verbose) {
+                    if (( i <=3) && (j <= 3) ) {
+                        print i , j, bsi
+                    }
+                }
+                
+                // Igore if same as i
+                if ( i == j ) {
+                    continue
+                }
+                // Is segment j in the currently accessed section?
+                if ( srl.object(j).secref.is_cas() ) {
+                    // If it segment j has lower x it might be parent
+                    if ( srl.object(j).x < srl.object(i).x ) {
+                        // If the best segment isn't in this section it 
+                        // should be or if it's not been set yet we should
+                        // set it
+                        if ( (!srl.object(bsi).secref.is_cas()) || (bsi == i) ) {
+                            bsi = j 
+                        } else {
+                            if ( srl.object(bsi).x < srl.object(j).x ) {
+                                // If it is, then only update if its x is
+                                // lower than j's
+                                bsi = j
+                            }
+                        }
+                    }
+                }
+                // Is segment j in the parent section of i?
+                // First check that section i has a parent (it might be the soma)
+                // and that the best section isn't the current one
+                if ( srl.object(i).secref.has_parent() && (!srl.object(bsi).secref.is_cas() || (bsi == i) )) {
+                    srl.object(i).secref.parent {
+                        if ( srl.object(j).secref.is_cas() ) {
+                            // If the best segment isn't in this section it should be
+                            if ( !srl.object(bsi).secref.is_cas() ) {
+                                bsi = j 
+                            } else {
+                                // If it is, then only update if its x is
+                                // lower than j's
+                                if ( srl.object(bsi).x < srl.object(j).x ) {
+                                    bsi = j
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (verbose) {
+                srl.object(bsi).secref.sec print "parent:", bsi , " ", secname(), srl.object(bsi).x
+                srl.object(i).secref.sec print "child:", i , " ", secname(), srl.object(i).x
+            }
+            $o1.x(i) = bsi
+        }
+    }
+}
+
+func count() {
+    return srl.count()
+}
+
+//
+// find_ind_of_segment(SegmentRef seg)
+// Find the index of the SegmentRef seg in the SegmentRefList. If the x value of 
+// SEG doesn't match precisely, pick the closest segment that does
+func find_ind_of_segment() { local i, j, dx, bestdx, bestind localobj seg
+    seg = $o1
+    bestdx  = 1
+    bestind = -1                        // This is the default value -- it means that the segment wasn't found
+    // Access the argument segment
+    seg.secref.sec {
+        // Look at each member of the segreflist
+        for j=0, srl.count()-1 {
+            // See if the member of the segreflist refers to the same section as SEG
+            if ((srl.object(j).secref.is_cas())) { 
+                // If so, see how close the x-values are
+                dx = abs(srl.object(j).x - seg.x)
+                // If the index improves on the previous one, then set the 
+                if (dx <= bestdx) {
+                    bestind = j
+                    bestdx = dx
+                }
+            }
+        }
+    }
+    return(bestind)
+}
+
+endtemplate SegmentRefList
+

@@ -25,7 +25,7 @@ PARAMETER {		:parameters that can be entered when function is called in cell-set
 NEURON {
 	  SUFFIX cal
 	  USEION ca READ cai,cao WRITE ica
-    RANGE gcalbar, gmax, gcal, minf, taum
+    RANGE gcalbar, gmax, gcal, minf, mtau
 }
 
 STATE {	m }                      : unknown parameter to be solved in the DEs 
@@ -35,7 +35,7 @@ ASSIGNED {                       : parameters needed to solve DE
     gcal  (mho/cm2)
     gmax  (mho/cm2) 
     minf
-    taum  (ms)
+    mtau  (ms)
 }
 
 INITIAL {                        : initialize the following parameter using rates()
@@ -90,13 +90,13 @@ FUNCTION betm(v (mV)) (/ms) {
 :only BREAKPOINT sets up the correct pointers to range variables.
 DERIVATIVE states {     : exact when v held constant; integrates over dt step
     rates(v)
-    m' = (minf - m)/taum
+    m' = (minf - m)/mtau
 }
 
 PROCEDURE rates(v (mV)) { :callable from hoc
     LOCAL a
-    TABLE taum, minf FROM -150 TO 150 WITH 300 
+    TABLE mtau, minf FROM -150 TO 150 WITH 300 
     a = alpm(v)
-    taum = 1/(tfa*(a+betm(v))) : estimation of activation tau
+    mtau = 1/(tfa*(a+betm(v))) : estimation of activation tau
     minf = a/(a+betm(v))       : estimation of activation steady state value
 }

@@ -1,0 +1,56 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sNmdaAmpaSpineSynStim = $Revision: 1.6 $, ",pkgversions)
+
+load_file("Spine.hoc")
+
+/*
+
+NmdaAmpaSpineSynStim - NMDA-AMPA synapse on spine with netstim stimulus
+
+s = new NmdaAmpaSpineSynStim()  - creates NmdaAmpaSpineSynStim s
+s.loc(x)              - locates at x on the current section
+s.get_distance()      - returns distance from origin specified by distance()
+
+*/
+
+begintemplate NmdaAmpaSpineSynStim
+
+public loc,  get_distance, event, destroy
+public ampasyn, nmdasyn, netcon, nmdanetcon, netstim, spine
+objref ampasyn, nmdasyn, netcon, nmdanetcon, netstim, spine 
+
+proc init() {
+    spine = new Spine($1) 
+    spine.head {
+        ampasyn = new AmpaSyn(0.5)
+        nmdasyn = new NmdaSyn(0.5)
+        netstim = new NetStim(0.5)
+        netcon     = new NetCon(netstim,ampasyn)
+        nmdanetcon = new NetCon(netstim,nmdasyn)
+    }
+}
+
+proc event() {
+    netcon.event($1)
+    nmdanetcon.event($1)
+}
+
+proc loc() {
+    spine.loc($1)
+}
+
+func get_distance() {
+    dist = distance(ampasyn.get_loc()) // Seems to work, though not documented
+    pop_section()                 // needed to keep the stack in order
+    return dist
+}
+
+proc destroy() {
+    objref ampasyn
+    objref nmdasyn
+    objref netstim
+    objref netcon
+    objref nmdanetcon
+}
+
+endtemplate NmdaAmpaSpineSynStim

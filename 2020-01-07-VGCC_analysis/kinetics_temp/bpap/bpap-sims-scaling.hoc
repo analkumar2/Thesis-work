@@ -1,0 +1,44 @@
+load_file("bpap-dendburst.hoc")
+load_file("bpap-somainj.hoc")
+load_file("TreePlot.hoc")
+load_file("ChannelBlocker.hoc")
+load_file("VarList.hoc")
+load_file("epspsizes.hoc")
+load_file("TreePlotArray.hoc")
+load_file("Integrator.hoc")
+load_file("utils.hoc")
+load_file("bpap-graphics.hoc")
+load_file("bpap-spiketrain.hoc")
+load_file("bpap-cell.hoc")
+load_file("bpap-pars.hoc")
+load_file("bpap-data.hoc")
+load_file("bpap-run.hoc")
+load_file("bpap-scaling.hoc")
+
+//cvode.atol(1e-8) for no activity
+// Set up the parameter lists and the default parameters
+pars_set_defaults()
+
+// Need to set these here to speed up computation that occurs 
+// while loading the model
+cell_set_cvode_atol(0.0001)
+
+cell_setup_cell()
+
+// cell_setup_cell() uses cvode, so switch back to fixed step if desired here
+cell_set_cvode_active(1)
+
+screc_inputs_sri = new Vector()
+parlist.appendVector("screc_inputs_sri")
+screc_inputs_sr = new SegmentRefList()
+create_and_distribute_inputs()
+
+graphics_lineup_shapeplot()
+graphics_mark_screc_synapses()
+
+
+tstop = 200
+nsyn = 240
+nruns = 500
+
+run_bpapscaling()

@@ -1,0 +1,31 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sbpap-somainj = $Revision: 1.3 $, ",pkgversions)
+
+load_file("bpap-record.hoc")
+
+//
+// Current stimulus at the soma to make BPAP
+// 
+
+create soma[1]
+objref stim
+proc setup_soma_iclamp () {
+    soma[somaind] stim = new IClamp(0.5)
+    stim.amp = soma_iclamp_amp * soma_iclamp_state
+    stim.del = soma_iclamp_del
+    stim.dur = soma_iclamp_dur
+}
+
+//
+// The main experiment
+//
+
+somaind = -1
+proc bpap_somainj () {
+    print cell_model
+    load_cell_model(cell_model)    
+    cell_statistics()
+    setup_soma_iclamp()    
+    measure_bpapsizes()
+}
+

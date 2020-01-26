@@ -1,0 +1,131 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sbpap-record = $Revision: 1.25 $, ",pkgversions)
+
+load_file("nrngui.hoc")
+load_file("FormatFile.hoc")
+load_file("bpap-cell.hoc")
+load_file("bpap-data.hoc")
+
+//
+// Recordngs
+//
+
+// Remove all recordings from list of vectors
+proc record_remove() { local i
+    for i=0,$o1.count() - 1 {
+        if (cvode_active()) {
+            cvode.record_remove($o1.object(i))
+        } 
+    }
+}    
+
+// Voltage from segments of dendritic tree
+objref vtree, tsyn            // List of membrane potential at synapses
+proc record_vtree() {
+    vtree = new List()
+    tsyn = new List()
+    for i= 0, segreflist.srl.count() - 1 {
+        vtree.append(new Vector())
+        tsyn.append(new Vector())
+        segreflist.srl.object(i).secref.sec cvode.record(&v(segreflist.srl.object(i).x),vtree.object(i),tsyn.object(i)) 
+    }
+}
+
+// Voltage from segments of dendritic tree
+objref catree, ttree            // List of membrane potential at synapses
+proc record_catree() {
+    catree = new List()
+    ttree  = new List()
+    for i= 0, segreflist.srl.count() - 1 {
+        catree.append(new Vector())
+        ttree.append(new Vector())
+        segreflist.srl.object(i).secref.sec cvode.record(&cai(segreflist.srl.object(i).x),catree.object(i),ttree.object(i)) 
+    }
+}
+
+// Voltage from the soma
+objref vsoma, tsoma
+proc record_vsoma() {
+    vsoma = new Vector()
+    tsoma = new Vector()
+    cvode.record(&v(0), vsoma, tsoma)
+}
+
+// Calcium concentration in spine heads
+objref casyn, scall_inputs
+proc record_casyn() {
+    casyn = new List()
+    for i=0,scall_inputs.count()-1 {
+        casyn.append(new Vector())
+        scall_inputs.object(i).spine.head casyn.object(i).record(&cai(0.5))
+    }
+}
+
+// Voltage at spine head
+objref vsyn
+proc record_vsyn() { localobj inputs
+    vsyn = new List()
+    for i=0, scall_inputs.count()-1 {
+        vsyn.append(new Vector())
+        scall_inputs.object(i).spine.head vsyn.object(i).record(&v(0.5))
+    }
+}
+
+// Calcium current in spine head
+objref icasyn
+proc record_icasyn() { localobj inputs
+    inputs = $o1
+    icasyn = new List()
+    for i=0, inputs.count()-1 {
+        icasyn.append(new Vector())
+        inputs.object(i).spine.head icasyn.object(i).record(&ica(0.5))
+    }
+}
+
+// Calcium current through NMDA receptors. 
+// The argument inputs is a list of SpineSynStim objects
+objref ica_nmdasyn
+proc record_ica_nmdasyn() { localobj inputs
+    inputs = $o1
+    ica_nmdasyn = new List()
+    for i=0, inputs.count()-1 {
+        ica_nmdasyn.append(new Vector())
+        ica_nmdasyn.object(i).record(&inputs.object(i).nmdasyn.ica)
+    }
+}
+
+// Calcium current through AMPA receptors. 
+// The argument inputs is a list of SpineSynStim objects
+objref ica_ampasyn
+proc record_ica_ampasyn() { localobj inputs
+    inputs = $o1
+    ica_ampasyn = new List()
+    for i= 0, inputs.count()-1 {
+        ica_ampasyn.append(new Vector())
+        ica_ampasyn.object(i).record(&inputs.object(i).ampasyn.ica)
+    }
+}
+
+// record_apcount_soma()
+// set up a recording of the action potential count in the soma
+objref record_apc
+proc record_apcount_soma() {
+    record_apc = new APCount(0.5)
+}
+
+// Record time of presynaptic spikes
+objref tprespike            // List of times of presynaptic spikes
+tprespike = new List()
+
+// record_tprespike()
+// Set up a recording of the presynaptic spike times
+proc record_tprespike() {
+    tprespike = new List()
+    // Ulp!!  need to know where the synapses are...
+    // ... oh no we don't, never mind
+    for i= 0,scall_inputs.count()-1  {
+        tprespike.append(new Vector())
+        scall_inputs.object(i).netcon.record(tprespike.object(i))
+    }
+    //    datalist.appendMatrix("tprespike",tprespikes)    
+}

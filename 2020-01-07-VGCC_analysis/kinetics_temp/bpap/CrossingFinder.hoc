@@ -1,0 +1,25 @@
+// findCrossings(xvec, theta, tvec)
+// Returns vector of times that the signal crosses the threshold theta
+obfunc find_crossings() { localobj xvec, tvec, tcross
+    xvec = $o1
+    theta = $2
+    tvec = $o3
+    type = $4
+    
+    tcross = new Vector()
+    for i=0,xvec.size()-2 {
+        // +ve going times
+        if (type == 1) {
+            if ((xvec.x(i) < theta) && xvec.x(i+1) >= theta) {
+                tcross.append(tvec.x(i))
+            }
+        }
+        if (type == 2) {
+            if ((xvec.x(i) > theta) && xvec.x(i+1) <= theta) {
+                tcross.append(tvec.x(i))
+            }
+        }
+    }
+    return tcross
+}
+

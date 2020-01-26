@@ -1,0 +1,337 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%s, ", nrnversion(), pkgversions)
+sprint(pkgversions,"%sbpap-gui = $Revision: 1.51 $, ",pkgversions)
+
+load_file("nrngui.hoc")
+load_file("bpap-dendburst.hoc")
+load_file("bpap-somainj.hoc")
+load_file("TreePlot.hoc")
+load_file("ChannelBlocker.hoc")
+load_file("VarList.hoc")
+load_file("epspsizes.hoc")
+load_file("TreePlotArray.hoc")
+load_file("Integrator.hoc")
+load_file("utils.hoc")
+load_file("bpap-graphics.hoc")
+load_file("bpap-spiketrain.hoc")
+load_file("bpap-cell.hoc")
+load_file("bpap-pars.hoc")
+load_file("bpap-data.hoc")
+load_file("bpap-run.hoc")
+
+// Set up the parameter lists and the default parameters
+pars_set_defaults()
+
+// Need to set the cvode integrator tolerance here to speed up the  
+// computation that occurs while loading the model
+cell_set_cvode_atol(0.0001)
+
+// Load the cell and extract some statistics from it
+cell_setup_cell()
+
+// Specify a SegmentRefList of synapse we always want to record from.
+// segreflist.srl.o(screc_inputs_sri.x(0)).name     
+screc_inputs_sri = new Vector()
+objref seg 
+apical_dendrite[5] seg = new SegmentRef(0.125)
+screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+apical_dendrite[74] seg = new SegmentRef(0.5)
+screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+apical_dendrite[51] seg = new SegmentRef(0.91666667 )
+screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+apical_dendrite[28] seg = new SegmentRef(0.5 )
+screc_inputs_sri.append(segreflist.find_ind_of_segment(seg))
+
+parlist.appendVector("screc_inputs_sri")
+screc_inputs_sr = new SegmentRefList()
+for i=0, screc_inputs_sri.size() - 1 {
+    screc_inputs_sr.append_segment(segreflist.srl.object(screc_inputs_sri.x(i)))
+    //print screc_inputs_sri.x(i)
+}
+
+//create_and_distribute_screc_inputs()
+create_and_distribute_inputs()
+
+//
+// Experimental setup 
+// 
+
+// Soma iclamp
+setup_soma_iclamp()
+tstop = 100
+
+// Channel blockers
+objref kapblocker, kadblocker
+kapblocker = new ChannelBlocker("gkabar_kap",sl)
+kadblocker = new ChannelBlocker("gkabar_kad",sl)
+
+//
+// User interface
+// 
+
+// Plots for the Soma EPSP amplidtude and transfer impedance
+objref epsp_soma_amp_tp, transimp_tp
+epsp_soma_amp_tp = new TreePlot(0)
+epsp_soma_amp_tp.view(0, 0, 1300, 1,   375, 543, 250,150)
+epsp_soma_amp_tp.auto_limits_on(1,1,1,1)
+epsp_soma_amp_tp.set_xlab("path distance /\\mu m")
+epsp_soma_amp_tp.set_ylab("EPSP amplitude at soma /mV")
+
+transimp_tp = new TreePlot(0)
+transimp_tp.view(0, 0, 1300, 100, 375, 750, 250,150)
+transimp_tp.auto_limits_on(1,1,1,1)
+
+// Plots for the Synapse EPSP amplidtude and transfer impedance
+objref epsp_syn_amp_deck, inputimp_deck
+objref epsp_syn_amp_tp[2], inputimp_tp[2]
+epsp_syn_amp_deck = new Deck()
+epsp_syn_amp_deck.intercept(1)
+for i=0,1 {
+    epsp_syn_amp_tp[i] = new TreePlot()
+    epsp_syn_amp_tp[i].auto_limits_on(1,1,1,1)
+    epsp_syn_amp_tp[i].set_ylab("EPSP amplitude at synapse /mV")
+}
+epsp_syn_amp_tp[0].set_xlab("Path distance /\\mu m")
+epsp_syn_amp_tp[1].set_xlab("Effective amplitude /mV")
+
+epsp_syn_amp_deck.intercept(0)
+epsp_syn_amp_deck.map("Synapse EPSP amp vs distance or size", 650, 543, 250, 178)
+
+inputimp_deck = new Deck()
+inputimp_deck.intercept(1)
+inputimp_tp[0] = new TreePlot()
+inputimp_tp[0].auto_limits_on(1,1,1,1)
+inputimp_tp[1] = new TreePlot()
+inputimp_tp[1].auto_limits_on(1,1,1,1)
+inputimp_deck.intercept(0)
+inputimp_deck.map("Input impedance vs distance or size", 650, 750, 250, 178)
+
+// Decks to put the plots in
+objref deck
+deck = new Deck()
+
+// TreePlotArrays for plots vs distance and size
+objref tpa[2]
+deck.intercept(1)
+rows = 2
+cols = 3
+for i=0,1 {
+    tpa[i] = new TreePlotArray(rows,cols)
+    tpa[i].rp.set_width(6)
+    tpa[i].rp.set_height(8)
+}
+
+deck.intercept(0)
+deck.map("Features vs distance or size", 375, 0  , 500, 465)
+deck.flip_to(0)
+
+
+// Plots for the  features of vtree versus distance
+objref vtreemax_tp[2], vtreeint_tp[2], vsyndel_tp[2]
+for i=0,1 {
+    tpa[i].cellref(vtreemax_tp[i], 0, 0)
+    vtreemax_tp[i].auto_limits_on(0,0,0,1)
+    vtreemax_tp[i].set_ylab("Peak voltage /mV")
+    // When in crosshair mode, pressing a key will call
+    // tp_action()
+    vtreemax_tp[i].graph.crosshair_action("tp_action",1)
+    
+    tpa[i].cellref(vtreeint_tp[i], 0, 1)
+    vtreeint_tp[i].auto_limits_on(0,0,1,1)
+    vtreeint_tp[i].set_ylab("Integral of voltage /\\mu Vs")
+    
+    tpa[i].cellref(vsyndel_tp[i], 0, 2)
+    vsyndel_tp[i].auto_limits_on(0,0,1,1)
+    vsyndel_tp[i].set_ylab("Delay to peak voltage /ms")
+}
+
+// Plots for the  features of casyn versus distance
+objref casynmax_tp[2], casynint_tp[2], casyndel_tp[2] 
+for i=0,1 {
+    tpa[i].cellref(casynmax_tp[i], 1, 0)
+    casynmax_tp[i].auto_limits_on(0,0,1,1)
+    casynmax_tp[i].lines(0)
+    casynmax_tp[i].marks(1)
+    casynmax_tp[i].set_ylab("Peak Ca conc /mM")
+    casynmax_tp[i].graph.crosshair_action("tp_action",1)
+
+    tpa[i].cellref(casynint_tp[i], 1, 1)
+    casynint_tp[i].auto_limits_on(0,0,1,1)
+    casynint_tp[i].lines(0)
+    casynint_tp[i].marks(1)
+    casynint_tp[i].set_ylab("Integral of Ca conc /\\mu Ms")    
+    tpa[i].cellref(casyndel_tp[i], 1, 2)
+    casyndel_tp[i].auto_limits_on(0,0,1,1)
+    casyndel_tp[i].lines(0)
+    casyndel_tp[i].marks(1)
+    casyndel_tp[i].set_ylab("Delay to peak Ca conc /ms")    
+}
+
+// This is the function called when a key is pressed in crosshair mode
+// Args i, c, $o3, $o4
+proc tp_action() {
+    print $1, $2
+    print segreflist.srl.object($1).name()
+    segreflist.srl.object($1).secref.sec print distance(segreflist.srl.object($1).x)
+    print "Perp_distance: ", perp_distances.x($1)
+    segreflist.srl.object($1).secref.sec Shape[0].color($2 % 8)
+}
+
+// Function and panel to help flip the decks
+proc _gui_decks_flip_to () { 
+    deck.flip_to($1)
+    epsp_syn_amp_deck.flip_to($1)
+    inputimp_deck.flip_to($1)
+}
+_gui_decks_flip_to(0)
+
+// Functions to make plotting voltage and calcium signals less painful
+_gui_errorbars = 1   // Global specifying whether errobars are plotted
+
+// _gui_plot(TreePlot tp, Vector measure, Vector quantity_mean, Vector quantity_stdev) 
+// Procedure to plot quantity_mean versus meseaur in a TreePlot tp. The
+// quantity_stdev argument is used to plot errorbars if the global variable
+// _gui_errorbars is set to 1
+proc _gui_plot() {
+    $o1.errorbars(_gui_errorbars)
+    $o1.plot($o2,$o3,parents,$o4)
+    $o1.set_limits($o2.min(), $o2.max(), -70, 30)
+    $o1.view_equal_plot()
+}
+
+// _gui_plot_inputs(TreePlot tp, Vector measure, Vector quantity_mean, Vector quantity_stdev) 
+// Same as _gui_plot(), except only plot from segments which have inputs inserted 
+proc _gui_plot_inputs() { 
+    _gui_plot($o1, $o2.ind(scall_inputs_sri), $o3.ind(scall_inputs_sri), $o4.ind(scall_inputs_sri))
+}
+
+// The main panel
+xpanel("Control panel") 
+xlabel("Parameters")
+parlist.xstatebutton("Dendburst","dendburst_state")
+parlist.xstatebutton("Spikes from file","spiketime_state")
+//xlabel(scstim_file)
+//xbutton("Choose SC spike file","bpap_spiketrain_choose_file()")
+parlist.xvalue("Ra", "cell_Ra")
+parlist.xvalue("nsyn", "nsyn")
+parlist.xvalue("AMPA gbar","gsbar_ampa")
+parlist.xvalue("NMDA gbar","gsbar_nmda")
+parlist.xstatebutton("AMPA synapses scaled","ampa_scaled")
+parlist.xvalue("spine head diameter","headdiam")
+parlist.xvalue("spine head length","headL")
+parlist.xvalue("gmax_car_spine","gmax_car_spine")
+parlist.xstatebutton("Current clamp","soma_iclamp_state")
+parlist.xvalue("amp","soma_iclamp_amp")
+parlist.xvalue("start time","soma_iclamp_del")
+parlist.xstatebutton("Block KA channels","ka_blocked_state")
+parlist.xvalue("Min KA inactivation tau","taulmin_ka")
+parlist.xradiobuttons("Jitter type","jitter_type","Uniform","Normal")
+parlist.xvalue("Jitter","jitter")
+parlist.xvalue("Number of runs","nruns")
+parlist.xvalue("EPSP start time","epsp_start")
+xlabel("Run")
+xbutton("BPAP Run ","gui_run_bpap()")
+xbutton("Find EPSP amplitudes","gui_epsprun()")
+xlabel("File")
+xbutton("Save Parameters","parlist.save(\"\",\"pars\")")
+xbutton("Load Parameters","parlist.load(\"\",\"pars\")")
+xbutton("Save Parameters and Data","save_parameters_and_data_gui()")
+xlabel("Plot features vs")
+xradiobutton("distance", "_gui_decks_flip_to(0)")
+xradiobutton("size", "_gui_decks_flip_to(1)")
+xpanel(0,100)                           // Just below the main menu
+
+strdef dataname
+proc save_parameters_and_data_gui() {
+    data_get_dataname(dataname, "dendburst")
+    string_dialog("Enter name of parameter set",dataname )
+    data_save_parameters_and_data(dataname)
+}
+
+// 
+//  The procedure to run the simulation -- also redraws graphs
+// 
+
+// Set up the plot
+graphics_lineup_shapeplot()
+graphics_mark_synapses()
+graphics_add_synrecs()
+
+// Define the measures for the arrays of plots
+measure[0] = distances
+measure[1] = transimp
+epsps_measured = 0
+
+// Proc to run the simulation and collect statistics
+proc gui_run_bpap() {
+    // Check what our measure of size is
+    if (!epsps_measured) { 
+        print "bpap-interactive: warning: using transfer impedance as measure of size" 
+    }
+    
+    run_bpap()
+    // Do plots
+    gui_bpap_plot() 
+}
+
+// Proc to plot various statistics from the BPAP run
+proc gui_bpap_plot() { local i
+    // Plot maxima
+    for  i=0,1 {                        // For plots vs distance and size
+        _gui_plot(vtreemax_tp[i], measure[i], vtreemax_mean, vtreemax_stderr)
+        _gui_plot_inputs(casynmax_tp[i], measure[i], casrimax_mean, casrimax_stderr)
+    }
+    
+    // Plot integrals
+    for i=0,1 {
+        _gui_plot(vtreeint_tp[i],  measure[i], vtreeint_mean, vtreeint_stderr)
+        _gui_plot_inputs(casynint_tp[i], measure[i], casriint_mean, casriint_stderr)
+    }
+    
+    // Plot delays
+    for i=0,1 {
+        vsyndel_tp[i].marks(1)
+        vsyndel_tp[i].lines(0)
+        _gui_plot_inputs(vsyndel_tp[i], measure[i], vsridel_mean, vsridel_stderr)
+        _gui_plot_inputs(casyndel_tp[i], measure[i], casridel_mean,casridel_stderr, 0, nsyn-1)
+    }
+    
+    // Plot impedance
+    transimp_tp.plot(distances,transimp,parents)
+    for i=0,1 {
+        inputimp_tp[i].plot(measure[i],inputimp,parents)
+        inputimp_tp[i].view_equal_plot()
+    }
+}
+
+// Proc to find EPSP amplitudes
+proc gui_epsprun() {
+    // Set name for data
+    data_get_epsprun_dataname(dataname)
+    string_dialog("Enter name of parameter set", dataname)
+    run_epsp()
+    
+    // Plots
+    epsp_soma_amp_tp.plot(distances, epsp_soma_amp, parents)
+    epsp_soma_amp_tp.view_equal_plot()
+    epsp_soma_amp_tp.rp.set_width(3)
+    epsp_soma_amp_tp.rp.set_height(3)
+    for i=0,1 {
+        epsp_syn_amp_tp[i].plot(measure[i], epsp_syn_amp, parents)
+        epsp_syn_amp_tp[i].view_equal_plot()
+        epsp_syn_amp_tp[i].rp.set_width(3)
+        epsp_syn_amp_tp[i].rp.set_height(3)
+    }
+    
+    // Print plots
+    sprint(filename,"plots/%s-soma.eps",dataname)
+    epsp_soma_amp_tp.rprintfile(filename,1)
+    sprint(filename,"plots/%s-syn-distance.eps",dataname)
+    epsp_syn_amp_tp[0].rprintfile(filename,1)
+    sprint(filename,"plots/%s-syn-size.eps",dataname)
+    epsp_syn_amp_tp[1].rprintfile(filename,1)
+    
+    // Save to file
+    data_save_parameters_and_data(dataname)
+}
+

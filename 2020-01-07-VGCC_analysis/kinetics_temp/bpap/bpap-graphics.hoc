@@ -1,0 +1,136 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sbpap-graphics = $Revision: 1.7 $, ",pkgversions)
+
+load_file("VCaGraph.hoc")
+
+// The code in this file is a hotchpotch of code, dating from a time
+// when I (DCS) was trying to get the interface to do exciting 
+// point-and-click things and clean up the code by abstracting into objects.
+// It hasn't quite happened yet...
+
+
+// This object links up a ShapePlot with a VCaGraph, which contains plots
+// of the voltage, calcium concentration, calcium currents and NMDA
+// block values from a spine head
+begintemplate ShapeActionHandler
+
+public record_syn, handle_action, vcag, mark_synapses
+objref sh                               // A shape plot 
+objref vcag                             // VCaGraph
+objref sf                               // Auxilliary things
+strdef s1, s2                           // Auxilliary things
+
+// ShapeActionHandler(ShapePlot sh)
+// Initialise with a a ShapePlot
+proc init() {
+    sf = new StringFunctions()
+    vcag = new VCaGraph(920, 0, 180, 720)
+    sh = $o1
+    colbase = 2                         
+    col = colbase
+    // Set action for when ShapePlot is clicked on
+    sh.action("handle_action()")
+}
+
+// handle_action()
+// The action to perform when the ShapePlot is clicked on 
+proc handle_action() {
+    print secname()
+    print (hoc_ac_)
+}
+
+// record_syn(NmdaAmpaSpineSynStim syn)
+// Add features of the synapse syn to the VCaGraph
+func record_syn() {
+    vcag.addvar($o1, col, 1)
+    sh.point_mark($o1.ampasyn, col)
+    col = col + 1
+    return col - 1
+}
+
+// mark_synapses(standard_inputs, rec_inputs)
+// Mark standard_inputs with grey circles and rec_inputs with the coloured
+// synapses
+proc mark_synapses() { local i
+    sh.point_mark_remove()
+    // Mark normal synapses
+    for i = 0, $o1.count() - 1 {
+        sh.point_mark($o1.object(i).ampasyn, 9) 
+    }
+    // Mark coloured synapses
+    for i = 0, $o2.count() - 1 {
+        sh.point_mark($o2.object(i).ampasyn, colbase + i)
+    }
+    sh.flush()
+}
+
+endtemplate ShapeActionHandler
+
+objref basemark, apexmark
+objref sah
+
+// graphics_lineup_shapeplot()
+// This twists the plot of the neuron around so that it is pointing in 
+// the correct position and adds a scalebar
+proc graphics_lineup_shapeplot() { localobj aold
+    // It seemst to be necessary to run doNotify() here
+    doNotify()
+    aold = new Vector(2)
+    apex.secref.sec aold.x[0] =  x3d(apex.x) 
+    apex.secref.sec aold.x[1] =  y3d(apex.x)
+    base.secref.sec aold.x[0] =  aold.x[0]-x3d(base.x)
+    base.secref.sec aold.x[1] =  aold.x[1]-y3d(base.x)
+    // atan2(y,x). In our case we want angle to y-axis (not x-axis) so
+    // we want atan2 (-x,y)
+    theta = atan2(-aold.x[0],aold.x[1])
+    print theta
+    // Start from x-y plane
+    Shape[0].rotate()
+    
+    // The rotate
+    Shape[0].rotate(0,0,0,0,0,theta)
+    
+    // Scale bar 100um long
+    Shape[0].beginline()
+    Shape[0].line(100,200,50)
+    Shape[0].line(100,100,50)
+    Shape[0].flush()
+    sah = new ShapeActionHandler(Shape[0])
+}
+
+// graphics_mark_synapses()
+// Convenience function 
+proc graphics_mark_synapses() {
+    sah.mark_synapses(scall_inputs, screc_inputs)
+}
+
+proc graphics_mark_screc_synapses() { localobj l
+    l = new List()
+    sah.mark_synapses(l, screc_inputs)
+}
+
+
+// graphics_add_synrecs()
+// Set up recordings to be displayed graphically from the special,
+// coloured synapses, which are defined in screc_inputs
+// Also prints a copy of the cell to neuron.eps - this should probably change
+
+proc graphics_add_synrecs() {  local i localobj ppm
+    
+    for i = 0, screc_inputs.count() -1 {
+        sah.record_syn(screc_inputs.object(i))
+    }
+    
+    ppm = new PointProcessMark(0.5)
+    Shape[0].unmap()
+    Shape[0].point_mark(ppm,1)
+    Shape[0].view(-180, 200, 280, 30, 1150, 0, 400, 600)
+    Shape[0].show(0)
+    Shape[0].printfile("neuron.eps")
+    Shape[0].unmap()
+    
+    // FIXME: These are hacks to get rid of unwanted plots created by the 
+    // Poirazi code
+    Shape[1].unmap()
+    Shape[2].unmap()
+}

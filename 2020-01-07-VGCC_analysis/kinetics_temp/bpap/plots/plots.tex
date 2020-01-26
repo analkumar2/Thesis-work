@@ -1,0 +1,195 @@
+\documentclass{article}
+\usepackage[left=1in,right=1in,top=0.7in,bottom=0.5in]{geometry}
+\usepackage{graphicx}
+\usepackage{arial}
+\renewcommand{\rmdefault}{phv}
+\newcommand{\dg}{}              % Datagroup
+\input{vc}
+%\pagestyle{myheadings}
+\pagestyle{empty}
+\usepackage{color}
+\newcommand{\VCHeader}{Datagroup: \dg. \VCDateISO\ at
+  \VCTime. Revision \VCRevisionMod}
+\markboth{\VCHeader}{\VCHeader}
+\newlength{\colwidth}
+\setlength{\colwidth}{3.27in}
+%\newcommand{\figtitle}[1]{\textbf{#1}}
+\newcommand{\figtitle}[1]{}
+%\setlength{\parskip}{0pt}
+
+\begin{document}
+
+% As part of our efforts to improve published figure quality, we
+% recommend that you size your figures to fit one of three widths;
+% 8.3cm, 12.35cm, or 17.35cm wide (maximum figure height is 23.35 cm),
+% as detailed in our Figure Guidelines at
+% http://www.ploscompbiol.org/static/figureGuidelines.action#quickref.
+
+\fontsize{8}{20}\selectfont
+% \section{Main plots}
+% \label{plots:sec:main-plots}
+
+\figtitle{Figure 1}
+% : Experimental and model responses to somatic current
+% injection.
+
+\vspace{\baselineskip}
+
+%\includegraphics[width=0.8\linewidth]{figure1_version2010_08_27cell2_withfit-r150}
+\noindent\includegraphics{../../journal-paper/figures/figure1a}
+\begin{minipage}[b]{0.5\colwidth}
+\includegraphics{../../journal-paper/figures/Fig2009_10_26cell1_1sp_withfit}  
+\includegraphics{../../journal-paper/figures/relcalcium}  
+%\includegraphics{relcalcium}  
+\end{minipage}
+\includegraphics{somainj-manual2}
+\includegraphics{\dg ca1_poirazi-somainj-Ra050-cv1-synrecs}
+
+
+
+
+%  \textbf{A} Experimnentally-measured calcium fluorescence
+% traces from the apical trunk. \textbf{B} Height of fluorescnece peak
+% versus distance from the soma. \textbf{C} Top trace: time course of
+% membrane potential at coloured spines and soma (black). Middle trace:
+% time course of calcium concentration in the dendritic tree next to the
+% coloured spines. Bottom trace: time course of calcium concentration in
+% coloured spine heads. \textbf{D} peak value of the membrane potential
+% throughout the tree. \textbf{E} Peak value of calcium concentration
+% throughout the tree.
+
+\pagebreak[4]
+
+\figtitle{Figure 2}
+% : Response to Schaffer collateral stimulation by 240
+% synchronously-activated synapses.
+
+\vspace{\baselineskip}
+
+\noindent
+\begin{minipage}[t]{0.5\colwidth}
+  \textbf{A}\\
+    \includegraphics[width=\linewidth]{dendburst}
+\end{minipage}
+\begin{minipage}[t]{0.5\colwidth}
+  \mbox{}\\[-0.5\baselineskip]
+  \includegraphics{\dg ca1_poirazi-dendburst-s240-j00t1-a200-n45-bv-r170-sc0-Ra050-nr0100-cv1-synrecs}  
+\end{minipage}\\
+\noindent\includegraphics{\dg ca1_poirazi-dendburst-s240-j00t1-a200-n45-bv-r170-sc0-Ra050-nr0100-cv1}
+
+ % \textbf{A} Morphology of simulated
+ %  cell, including positions of synapses (in gray). Panels
+ %  \textbf{B--E} show representative traces of membrane potential
+ %  (\textbf{B}), calcium concentration (\textbf{C}), NMDA current
+ %  (\textbf{D}) and AMPA current (\textbf{E}). Panels \textbf{F-I} show
+ %  statistics of the membrane potential and calcium traces, averaged
+ %  over 100 runs. On each run, the locations of all spines apart from
+ %  the coloured reference spines was generated randomly according to
+ %  the realistic statistics (see Methods). In each case, the black line
+ %  shows the regression of path distance on the quantity in question,
+ %  and the $R^2$ value for the fit is quoted. Vertical lines indicate
+ %  the standard deviation.  \textbf{F} Amplitude of membrane potential
+ %  at peak. \textbf{G} Amplitude of calcium concentration at peak. In
+ %  both the amplitude plots there is very little variability in
+ %  amplitude between trials. \textbf{H} Delay from stimulation to peak
+ %  membrane potential.  \textbf{I} Delay from stimulation to peak
+ %  calcium concentration. In both the delay plots, the grey vertical
+ %  lines indicate significant variability.
+
+\pagebreak[4]
+
+Figure 3
+
+\pagebreak[4]
+
+\noindent\figtitle{Figure 4}
+
+% : \textbf{(A-D)}~The effect of asynchronous inputs on
+% features of voltage and calcium signals. \textbf{(E-L)}~The effect of
+% subthreshold input on features of voltage and calcium signals.
+
+\vspace{\baselineskip}
+
+\noindent\includegraphics{\dg ca1_poirazi-dendburst-s240-j10t1-a200-n45-bv-r170-sc0-Ra050-nr0100-cv1}\\
+\noindent\includegraphics{\dg ca1_poirazi-dendburst-s190-j00t1-a200-n45-bv-r170-sc0-Ra050-nr0100-cv1}
+
+    % (A-D) The effect of asynchronous inputs on features of voltage and
+    % calcium signals. In each of 100 simulations, the cell was
+    % presented with synaptic inputs whose activation times were
+    % randomly drawn from a 10ms window. The average values of the
+    % features plotted against distance. (E-L) The effect of
+    % subthreshold input on features of voltage and calcium signals. In
+    % this simulation 190 synapses were activated, which was not
+    % sufficient to bring the neuron to its firing threshold. In all
+    % other respects the simulation was the same as that shown in Fig
+    % 2. (E-H) Traces of membrane potential, calcium concentration,
+    % calcium current and block factor from the coloured synapses in
+    % Figure 2A. (I-L) Peak value and delay to peak of voltage and
+    % calcium signals.
+
+\pagebreak[4]
+
+Figure 5
+
+\pagebreak[4]
+
+\figtitle{Figure 6}
+% : Features of calcium and voltage signals as
+% predictors of attenuation.
+
+\vspace{\baselineskip}
+
+\noindent\includegraphics{\dg att-dist}
+\includegraphics{\dg ca1_poirazi-dendburst-s240-j00t1-a200-n45-bv-r170-sc0-Ra050-nr0100-cv1-att}
+
+  % Features of calcium and voltage signals as predictors of
+  % attenuation. (A) Path distance between soma and synapse versus EPSP
+  % attenuation at the soma. (B-E) With synchronous Schaffer Collateral
+  % input, features of the time course of the voltage and calcium
+  % signals plotted against attenuation rather than distance as in
+  % Figure 2F-I.
+
+\pagebreak[4]
+
+\figtitle{Figure 7}
+
+\vspace{\baselineskip}
+\includegraphics{\dg ca1_poirazi-dendburst-s240-j00t1-a200-n45-bv-r170-sc1-Ra050-nr0100-cv1}
+
+\pagebreak[4]
+
+Figure 8
+
+\pagebreak[4]
+\figtitle{Figure S1}
+
+\includegraphics{stimulation-comparison}
+
+\pagebreak[4]
+
+Figure S2
+
+\pagebreak[4]
+
+\figtitle{Figure S3}
+
+\noindent
+\begin{minipage}[t]{0.5\colwidth}
+  \textbf{A}\\
+    \includegraphics[width=\linewidth]{dendburst}
+\end{minipage}
+\begin{minipage}[t]{0.5\colwidth}
+  \mbox{}\\[-0.5\baselineskip]
+  \includegraphics{\dg ca1_poirazi-dendburst-s240-j00t1-a200-n45-bv-r000-sc0-Ra050-nr0100-cv1-synrecs}  
+\end{minipage}\\
+\noindent\includegraphics{\dg ca1_poirazi-dendburst-s240-j00t1-a200-n45-bv-r000-sc0-Ra050-nr0100-cv1}
+
+\pagebreak[4]
+
+Figure S4
+
+\end{document}
+
+
+
+% LocalWords:  NMDA AMPA EPSP

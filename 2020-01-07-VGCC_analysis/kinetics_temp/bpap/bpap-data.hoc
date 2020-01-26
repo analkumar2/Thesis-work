@@ -1,0 +1,40 @@
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sbpap-data = $Revision: 1.4 $, ",pkgversions)
+
+load_file("VarList.hoc")
+load_file("FormatFile.hoc")
+load_file("bpap-pars.hoc")
+
+// List of data variables
+objref datalist
+datalist = new VarList()
+
+// Version information
+datalist.appendString("pkgversions")
+
+strdef filename
+objref outfile, sah, segreflist
+
+// save_parameters_and_data(), referenced in the panel
+proc data_save_parameters_and_data() {
+    sprint(filename,"pars/%s",$s1)
+    parlist.save(filename)
+    
+    sprint(filename,"datastore/%s",$s1)
+    outfile=new FormatFile(filename,"R","r")
+    outfile.wopen()
+    parlist.fprint(outfile)
+    datalist.fprint(outfile)
+//    sah.vcag.save(outfile)    
+    outfile.close()
+}
+
+// Generate a name for a dataset to be saved
+strdef cell_model
+proc data_get_dataname() {
+    sprint($s1, "%s-%s-s%03g-j%02gt%1g-a%02g-n%02g-bv-r%03g-sc%1g-Ra%03g-nr%04g-cv%01g", cell_model, $s2, nsyn, jitter,jitter_type,gsbar_ampa*1E6,gsbar_nmda*1E6,gmax_car_spine,ampa_scaled, cell_Ra, nruns, cvode_on)
+}
+
+proc data_get_epsprun_dataname() {
+    sprint($s1, "epspamp-Ra%03g", cell_Ra)
+}

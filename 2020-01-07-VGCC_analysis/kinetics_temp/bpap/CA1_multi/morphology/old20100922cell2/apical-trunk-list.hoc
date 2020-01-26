@@ -1,0 +1,102 @@
+// This function makes a list with all dendritic sections in the apical trunk
+// written by Yiota Poirazi, July 2001, poirazi@LNC.usc.edu
+
+strdef origin
+objref apical_trunk_list,apical_endtosoma
+objref this
+apical_trunk_list=new SectionList()
+apical_endtosoma=new List()
+
+// PREVIOUS VERSION, THIS FUCNTION TRACES BACK TO ORIGIN AND PUTS ITS IN A SECTIONLIST ( IN STEAD OF LIST)
+//obfunc trace_to_origin() { localobj path
+//  path = new SectionList()
+//  while (isorigin(this)!=1) { // if this is not the origin
+//    this.sec path.append() // Add current accessed segment this to the path
+//    this = parsr(this) // the new this is the parent of the previous this
+//  }
+//  return path
+//}
+
+obfunc reverse_listtrunk(){ localobj revlist,reftemp
+  revlist=new SectionList()
+  for(i=$o1.count()-1;i>=0;i=i-1) {
+    reftemp=$o1.o(i)
+    reftemp.sec revlist.append()
+  }
+  return revlist
+}
+
+obfunc trace_to_origin() { localobj path
+  path = new List()
+  while (isorigin(this)!=1) { // if this is not the origin
+    path.append(this)
+    this = parsr(this) // the new this is the parent of the previous this
+  }
+  return path
+}
+
+func isorigin() { local x  // return 1 if $o1.sec is the origin of the path
+// $o1.sec print secname() // if you want to see it working
+  $o1.sec x=issection(origin)
+  return x
+}
+
+obfunc parsr() { localobj tobj // return SectionRef of parent of $o1.sec
+  $o1.parent tobj = new SectionRef()
+  return tobj
+} 
+
+//all paths are traced to the soma
+soma origin = secname() // so we can tell when we have reached the origin of the path
+
+//determine path from apical_dendrite[104]
+strdef tmp_string
+apical_dendrite[26] this = new SectionRef()
+apical_endtosoma=trace_to_origin()
+apical_trunk_list=reverse_listtrunk(apical_endtosoma)
+forsec apical_trunk_list{ 
+  //sprint(tmp_string,"access %s",secname())
+  //execute1(tmp_string)
+  print secname() // just to show that it worked
+}
+print "above is given the apical_trunk"
+
+/* OLD CODE: ADJUSTED BY MARTINE ROSA GROEN TO IMPLEMENT MULTIPLE MORPHOLOGIES
+apical_dendrite[0]  apical_trunk_list.append() // 13.40  microns from soma 
+apical_dendrite[4]  apical_trunk_list.append() // 46.03 (vertical distance)
+apical_dendrite[6]  apical_trunk_list.append() // 45.75
+apical_dendrite[14] apical_trunk_list.append() // 52.53
+apical_dendrite[15] apical_trunk_list.append() // 58.97
+apical_dendrite[16] apical_trunk_list.append() // 70.89
+apical_dendrite[22] apical_trunk_list.append() // 72.93
+apical_dendrite[23] apical_trunk_list.append() // 74.48
+apical_dendrite[25] apical_trunk_list.append() // 93.56
+apical_dendrite[26] apical_trunk_list.append() // 98.55
+apical_dendrite[27] apical_trunk_list.append() // 121.89
+apical_dendrite[41] apical_trunk_list.append() // 144.46
+apical_dendrite[42] apical_trunk_list.append() // 142.81
+apical_dendrite[46] apical_trunk_list.append() // 156.96
+apical_dendrite[48] apical_trunk_list.append() // 162.99
+apical_dendrite[56] apical_trunk_list.append() // 179.58
+apical_dendrite[58] apical_trunk_list.append() // 180.11
+apical_dendrite[60] apical_trunk_list.append() // 210.33
+apical_dendrite[62] apical_trunk_list.append() // 222.80
+apical_dendrite[64] apical_trunk_list.append() // 233.67
+apical_dendrite[65] apical_trunk_list.append() // 252.71
+apical_dendrite[69] apical_trunk_list.append() // 292.06
+apical_dendrite[71] apical_trunk_list.append() // 324.53 
+apical_dendrite[81] apical_trunk_list.append() // 346.84
+apical_dendrite[83] apical_trunk_list.append() // 387.00
+apical_dendrite[95] apical_trunk_list.append() // 413.05
+apical_dendrite[103] apical_trunk_list.append() // 417.73
+apical_dendrite[104] apical_trunk_list.append() // 423.75
+*/ //END OLD CODE COMMENTED OUT
+
+/* Make a shape graph with apical trunk sections
+
+objref apical_trunk_list_shape
+apical_trunk_list_shape=new Shape()
+color_index=3
+apical_trunk_list_shape.color_list(apical_trunk_list,color_index)
+apical_trunk_list_shape.printfile("apical-trunk-list.eps")
+*/

@@ -1,0 +1,146 @@
+if (name_declared("pkgversions") != 4 ) { execute("strdef pkgversions") } 
+sprint(pkgversions,"%sutils = $Revision: 1.22 $, ",pkgversions)
+
+begintemplate Utils
+
+public error
+public warning
+public min, max
+public mean, stdev, stderr
+public mul_ratio_round
+public list_join, list_copy
+
+//
+// error(String error) 
+//
+// Issue error string and stop simulation
+//
+
+proc error() {
+    print "Error: ", $s1
+    stop
+}
+
+//
+// warning(String error) 
+//
+// Issue warning string
+//
+
+proc warning() {
+    print "Warning: ", $s1
+}
+
+//
+// x = min(double a, double b)
+// 
+// return minimum of a and b
+//
+
+func min() {
+    if ( $1 < $2 ) { return $1 } else { return $2 }
+}
+
+//
+// x = max(double a, double b)
+// 
+// return maximum of a and b
+//
+
+func max() {
+    if ( $1 > $2 ) { return $1 } else { return $2 }
+}
+
+//
+// mean(Vector dest, Matrix src) 
+// 
+// Compute mean of columns of src storing output in mean
+// 
+proc mean() { local i
+    $o1 = new Vector($o2.ncol())
+    for i=0, $o2.ncol()-1 {
+        $o1.x(i) = $o2.getcol(i).mean()
+    }
+}
+
+//
+// stdev(Vector dest, Matrix src) 
+// 
+// Compute standard deviation of columns of src storing output in stdev
+// 
+proc stdev() { local i
+    $o1 = new Vector($o2.ncol())
+    for i=0, $o2.ncol()-1 {
+        if ($o2.getcol(i).size > 1) {
+            $o1.x(i) = $o2.getcol(i).stdev()
+        } else {
+            $o1.x(i) = 0
+        }
+    }
+}
+
+//
+// stderr(Vector dest, Matrix src) 
+// 
+// Compute standard deviation of columns of src storing output in stderr
+// 
+proc stderr() { local i
+    $o1 = new Vector($o2.ncol())
+    for i=0, $o2.ncol()-1 {
+        if ($o2.getcol(i).size > 1) {
+            $o1.x(i) = $o2.getcol(i).stderr()
+        } else {
+            $o1.x(i) = 0
+        }
+    }
+}
+
+//
+// mul_ratio_round(Vector out, int n, Vector ratio) 
+// Return a vector OUT whose elements sum to N and are approximately in the ratio RATIO
+// 
+objref ratio, out, out_floor, out_rem, si
+proc mul_ratio_round() { local n, i
+    n     = $2
+    ratio = $o3
+    out   = ratio.c()
+    out.mul(n/ratio.sum())
+    out_rem = out.c
+    out.floor()
+    out_rem.sub(out)
+    si = out_rem.sortindex()
+    i = si.size()
+    while(out.sum() < n) {
+        i = i - 1
+        out.x(si.x(i)) = out.x(si.x(i)) + 1
+    }
+    $o1 = out
+}
+
+// 
+// list_join(List ldest, List lsrc)
+// Append every object in lsrc to ldest
+// 
+proc list_join() {
+    for i=0,$o2.count()-1 {
+        $o1.append($o2.object(i))
+    }
+}
+
+//
+// list_copy(ldest, lsrc, src_start, src_end) 
+// Copies lsrc into ldest, starting at src_start and finishing at src_end
+// 
+proc list_copy() { local src_start, src_end, i
+    src_start = $3
+    src_end   = $4
+    $o1 = new List()
+    for i = src_start, src_end {
+        $o1.append($o2.object(i))
+    }
+}
+
+endtemplate Utils
+
+objref utils
+utils = new Utils()

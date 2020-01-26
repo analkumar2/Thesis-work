@@ -1,0 +1,192 @@
+// Version information
+if (name_declared("pkgversions") != 4 ) {  execute("strdef pkgversions") }
+sprint(pkgversions,"%sepspsizes = $Revision: 1.18 $, ",pkgversions)
+
+// Required packages
+load_file("utils.hoc")
+load_file("bpap-record.hoc")
+load_file("bpap-dendburst.hoc")
+load_file("NmdaAmpaSynStim.hoc")
+load_file("NmdaAmpaSpineSynStim.hoc")
+load_file("SimpleSpine.hoc")
+
+// For a spine with an AMPA/NMDA synapse placed at each position 
+// on the dendrtic tree, we would like to know:
+// * The EPSP amplitude at the soma
+// * The EPSP amplitude at the spine
+// * The Ca amplitude at the spine
+//
+// We would also like to know the EPSP amplitude of the standard
+// spine/synapse placed at the soma, as this can then be used to 
+// compute the attenuation associated with any point on the dendritic
+// tree. 
+// 
+// To allow us to compute the EPSP amplitude and Ca amplitude of an 
+// individual synapse when there is activity, we first need to perform
+// a baseline simulation where we measure the membrane potential at
+// the soma and  the EPSP and Ca amplitude at each spine.
+//
+// Hence the pseudo-code reads:
+// 
+// insert_spine(positions)
+// record(spines,features,baseline) 
+// record(soma  ,v       ,baseline)
+// run()
+// 
+// record_remove()
+//
+// foreach position {
+//   insert_spine(position)
+//   record(spine ,features,active)
+//   record(soma  ,v       ,active)
+//   run()
+//   record_remove()
+// }   
+
+// The business
+objref syn, nc, netstim
+objref spine
+objref epsp_soma,     epsp_syn
+objref epsp_soma_amp, epsp_syn_amp
+objref epsp_ca_syn
+objref epsp_ca_syn_amp
+objref baseline_soma,     baseline_syn
+objref baseline_soma_amp, baseline_syn_amp
+objref baseline_ca_syn
+objref baseline_ca_syn_amp
+objref baseline_synapse
+objref epsp_attenuation
+objref epsp_srl
+
+proc measure_epspsizes() { local x, i, ncols, maxntestsegs
+    if (numarg() == 1 ) {
+        maxntestsegs = utils.min(1+$1,segreflist.srl.count()) // Maximum segment index to test
+    } else {
+        maxntestsegs = segreflist.srl.count()
+    }
+        
+    // Set up storage space for baseline and EPSP recordings
+    baseline_synapse = new List()
+    baseline_soma = new List()
+    baseline_syn = new List()
+    baseline_ca_syn = new List()
+    epsp_soma = new List()
+    epsp_syn = new List()
+    epsp_ca_syn = new List()
+    
+    baseline_soma_amp   = new Vector(maxntestsegs)
+    baseline_syn_amp    = new Vector(maxntestsegs)
+    baseline_ca_syn_amp = new Vector(maxntestsegs)
+    epsp_soma_amp       = new Vector(maxntestsegs)
+    epsp_syn_amp        = new Vector(maxntestsegs)
+    epsp_ca_syn_amp     = new Vector(maxntestsegs)
+    epsp_attenuation    = new Vector(maxntestsegs)
+    
+    //
+    // Baseline run
+    //
+    
+    // Add spines and recordings
+    for i= 0, maxntestsegs - 1 {        
+        baseline_soma.append(new Vector()) 
+        baseline_syn.append(new Vector())           
+        baseline_ca_syn.append(new Vector())           
+
+        // Set up spines
+        segreflist.srl.object(i).secref.sec baseline_synapse.append(new NmdaAmpaSpineSynStim(segreflist.srl.object(i).x))
+        
+        // Set up no input to the synapses
+        baseline_synapse.object(i).netstim.number = 0
+        
+        // Set up recordings
+        baseline_soma.object(i).record(&v(0),Dt)
+        baseline_synapse.object(i).spine.head baseline_syn.object(i).record(&v(0.5),Dt)
+        baseline_synapse.object(i).spine.head baseline_ca_syn.object(i).record(&cai(0.5),Dt)
+    }
+    
+    // run the simulation
+    run()
+    
+    // Remove recordings
+    for i= 0, maxntestsegs - 1 {        
+        baseline_syn.object(i).play_remove()
+        baseline_ca_syn.object(i).play_remove()
+        baseline_soma.object(i).play_remove()
+    }
+    // Remove synapses
+    baseline_synapse.remove_all()
+    
+    //
+    // EPSP runs    
+    // 
+    
+    // Iterate through segments
+    for i= 0, maxntestsegs - 1 {        
+        // Go through each segment in turn
+        // Locate a spine
+        segreflist.srl.object(i).secref.sec syn = new NmdaAmpaSpineSynStim(segreflist.srl.object(i).x)
+        
+        // Set parameters
+        syn.ampasyn.e = e_ampa
+        syn.netcon.weight = gsbar_ampa
+        
+        if (name_declared("gsbar_nmda")) { 
+            syn.nmdasyn.e = e_nmda
+            syn.nmdanetcon.weight = gsbar_nmda
+            syn.spine.head insert cacum
+            syn.spine.head insert car_mag
+            set_spine_pars(syn)
+        }
+        
+        // netcon parameters
+        syn.netstim.noise = 0
+        syn.netstim.start = epsp_start
+        syn.netstim.interval = tstop
+        syn.netstim.number = 1
+        
+        //
+        // Recordings
+        // 
+        epsp_soma.append(new Vector()) 
+        epsp_syn.append(new Vector())           
+        epsp_ca_syn.append(new Vector())           
+        
+        epsp_soma.object(i).record(&v(0),Dt)
+        syn.spine.head epsp_syn.object(i).record(&v(0.5),Dt)
+        syn.spine.head epsp_ca_syn.object(i).record(&cai(0.5),Dt)
+                
+        // Run the simulation
+        run()
+        
+        // Analysis
+        epsp_soma.object(i).sub(baseline_soma.object(i))
+        epsp_syn.object(i).sub(baseline_syn.object(i))
+        epsp_ca_syn.object(i).sub(baseline_ca_syn.object(i))
+        
+        epsp_soma_amp.x(i) =   epsp_soma.object(i).max()
+        epsp_syn_amp.x(i) =    epsp_syn.object(i).max()
+        epsp_ca_syn_amp.x(i) = epsp_ca_syn.object(i).max()
+        
+        // This assumes that the soma is first segment in segreflist
+        epsp_attenuation.x(i) = 1-(epsp_soma_amp.x(i)/epsp_soma_amp.x(0))
+        
+        // Remove recordings
+        epsp_syn.object(i).play_remove()
+        epsp_ca_syn.object(i).play_remove()
+        epsp_soma.object(i).play_remove()
+    }
+    
+    // Add to data list
+    datalist.appendVectorList("epsp_soma", "", 0)
+    datalist.appendVectorList("epsp_syn",  "", 0)
+    datalist.appendVectorList("epsp_ca_syn", "", 0)
+    datalist.appendVector("epsp_soma_amp")
+    datalist.appendVector("epsp_syn_amp")
+    datalist.appendVector("epsp_ca_syn_amp")
+    datalist.appendVector("epsp_attenuation")
+}
+
+
+
+
+
