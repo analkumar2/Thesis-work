@@ -1,0 +1,10 @@
+#This will get parsed properly in MOOSE only. NEURON will parse it differently.
+#5 compartments. soma area is 975e-12m**2. Its dimensions should be 23e-6m length and 13.5e-6m diameter. But since due to parsing issues in MOOSE, the current dimensionas are 17.6e-6m lenght and diameter. the curved surface area of the soma remains the same.
+#v3: removed axon
+#v5: changing diameter to get proper cell capacitance and input resistance
+#v7: Soma dimensions changed so that soma area is around 572e-12m**2
+
+1 1 0 0 0 6.75 -1
+2 2 50 0 0 0.45 1
+3 2 1500 0 0 0.45 2
+4 4 -1500 0 0 1 1
